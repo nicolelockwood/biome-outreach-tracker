@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Biome Outreach Tracker</title>
+
+  <!-- Fonts: DM Sans (body/UI) + Fraunces (display headings — organic, premium) -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Tailwind Config -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            /* ── Biome / Earthly brand greens ── */
+            "forest":       "#1a3d2b",   /* deep forest — primary text, nav, headings */
+            "forest-mid":   "#2d5a3d",   /* mid forest — hover states */
+            "forest-light": "#3d7a52",   /* lighter forest — secondary text on dark */
+            "canopy":       "#00c566",   /* vivid mint — CTAs, accent bars, highlights */
+            "canopy-dim":   "#00a854",   /* deeper mint — hover on CTA */
+            "meadow":       "#e8f5ee",   /* pale green — card tints, tag backgrounds */
+            "meadow-mid":   "#d0ead9",   /* slightly deeper — subtle dividers */
+
+            /* ── Neutral palette — white-based ── */
+            "surface":                  "#ffffff",
+            "surface-low":              "#f8faf9",
+            "surface-mid":              "#f2f6f3",
+            "surface-high":             "#e8ede9",
+            "surface-highest":          "#dde4de",
+            "ink":                      "#0d1f15",   /* near-black text */
+            "ink-mid":                  "#2e4237",   /* body text */
+            "ink-soft":                 "#5a7263",   /* secondary/muted text */
+            "ink-ghost":                "#8aaa97",   /* placeholder / disabled */
+            "border":                   "#dde6e0",
+            "border-soft":              "#eef2ef",
+
+            /* ── Semantic ── */
+            "error":                    "#c0392b",
+            "error-bg":                 "#fdf2f2",
+            "warning":                  "#d4820a",
+            "warning-bg":               "#fdf6e8",
+            "success":                  "#1a7a4a",
+
+            /* ── Legacy aliases (keep screens compiling) ── */
+            "primary":                  "#1a3d2b",
+            "on-primary":               "#ffffff",
+            "primary-container":        "#2d5a3d",
+            "primary-fixed":            "#e8f5ee",
+            "primary-fixed-dim":        "#d0ead9",
+            "on-primary-container":     "#00c566",
+            "on-primary-fixed":         "#0d1f15",
+            "on-primary-fixed-variant": "#2d5a3d",
+            "secondary":                "#3d7a52",
+            "on-secondary":             "#ffffff",
+            "secondary-container":      "#e8f5ee",
+            "secondary-fixed":          "#d0ead9",
+            "secondary-fixed-dim":      "#b8d9c5",
+            "on-secondary-fixed":       "#0d1f15",
+            "on-secondary-fixed-variant": "#2d5a3d",
+            "on-secondary-container":   "#1a3d2b",
+            "tertiary":                 "#1a6b3a",
+            "on-tertiary":              "#ffffff",
+            "tertiary-container":       "#c8ead3",
+            "tertiary-fixed":           "#e0f2e7",
+            "tertiary-fixed-dim":       "#c8ead3",
+            "on-tertiary-container":    "#1a3d2b",
+            "on-tertiary-fixed":        "#0d1f15",
+            "on-tertiary-fixed-variant":"#2d5a3d",
+            "on-background":            "#0d1f15",
+            "on-surface":               "#0d1f15",
+            "on-surface-variant":       "#5a7263",
+            "surface-variant":          "#e8ede9",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low":    "#f8faf9",
+            "surface-container":        "#f2f6f3",
+            "surface-container-high":   "#e8ede9",
+            "surface-container-highest":"#dde4de",
+            "surface-dim":              "#dde4de",
+            "surface-bright":           "#ffffff",
+            "surface-tint":             "#1a3d2b",
+            "outline":                  "#5a7263",
+            "outline-variant":          "#dde6e0",
+            "background":               "#ffffff",
+            "on-error":                 "#ffffff",
+            "error-container":          "#fdf2f2",
+            "on-error-container":       "#c0392b",
+            "inverse-surface":          "#0d1f15",
+            "inverse-on-surface":       "#f2f6f3",
+            "inverse-primary":          "#00c566",
+          },
+          fontFamily: {
+            "headline": ["Fraunces", "Georgia", "serif"],
+            "body":     ["DM Sans", "sans-serif"],
+            "label":    ["DM Sans", "sans-serif"],
+            "serif":    ["Fraunces", "Georgia", "serif"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.375rem",
+            "sm":      "0.25rem",
+            "md":      "0.5rem",
+            "lg":      "0.75rem",
+            "xl":      "1rem",
+            "2xl":     "1.5rem",
+            "full":    "9999px",
+          },
+          boxShadow: {
+            "card":     "0 1px 3px rgba(13,31,21,0.06), 0 4px 16px rgba(13,31,21,0.06)",
+            "card-hover": "0 4px 8px rgba(13,31,21,0.08), 0 12px 32px rgba(13,31,21,0.10)",
+            "nav":      "0 -2px 20px rgba(13,31,21,0.06)",
+            "sm":       "0 1px 3px rgba(13,31,21,0.06)",
+            "md":       "0 4px 16px rgba(13,31,21,0.08)",
+            "lg":       "0 8px 32px rgba(13,31,21,0.12)",
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #ffffff;
+      color: #0d1f15;
+    }
+
+    h1, h2, h3, h4, .font-serif, .font-headline {
+      font-family: 'Fraunces', Georgia, serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* Glassmorphism nav */
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Floating card */
+    .card {
+      background: #ffffff;
+      border: 1px solid #eef2ef;
+      box-shadow: 0 1px 3px rgba(13,31,21,0.05), 0 4px 16px rgba(13,31,21,0.05);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 4px 8px rgba(13,31,21,0.08), 0 16px 40px rgba(13,31,21,0.10);
+    }
+
+    /* Canopy green glow on primary buttons */
+    .btn-primary {
+      background: #1a3d2b;
+      color: #ffffff;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover {
+      background: #2d5a3d;
+      box-shadow: 0 4px 20px rgba(0, 197, 102, 0.25);
+    }
+    .btn-primary:active { transform: scale(0.97); }
+
+    /* Accent bar fill animation */
+    .bar-fill { transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    /* Kanban column header pill */
+    .col-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Smooth page transitions */
+    #app > div { animation: fadeUp 0.18s ease both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Table row hover */
+    tr.lead-row { transition: background 0.15s; }
+    tr.lead-row:hover { background: #f8faf9; }
+
+    /* Priority dot pulse for Critical */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .dot-critical { animation: pulse-dot 2s ease infinite; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface">
+  <div id="app"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
