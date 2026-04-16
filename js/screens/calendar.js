@@ -8,12 +8,15 @@ const PRIORITY_COLOUR = {
 };
 const pc = (p) => PRIORITY_COLOUR[p] || PRIORITY_COLOUR['Medium'];
 
-// Category colour for calendar dots
-const catColour = (lead) => {
-  const cat = (lead?.category || '').toLowerCase();
-  if (cat.includes('philanthropy') && cat.includes('investor')) return { bg: 'bg-copper', ring: 'ring-canopy' };
-  if (cat.includes('philanthropy')) return { bg: 'bg-copper' };
-  return { bg: 'bg-canopy' };
+// Dot colour by urgency/status — a visual map of what each day holds
+// Overdue = urgent red, High = copper, Medium = amber, Low = sage, Done = muted
+const dotColour = (item) => {
+  if (item.completed) return { hex: '#c8d8c4', cls: 'bg-mist' };           // done — faded
+  if (item.diffDays < 0)  return { hex: '#8a3a3a', cls: 'bg-urgent' };      // overdue — urgent
+  const p = item.lead?.priority;
+  if (p === 'Critical' || p === 'High') return { hex: '#b0603a', cls: 'bg-stage-hot' };  // copper
+  if (p === 'Low')                      return { hex: '#6b7d8a', cls: 'bg-stage-pipeline' }; // cool silver
+  return { hex: '#b8860b', cls: 'bg-stage-warm' };                          // amber / medium
 };
 
 export function renderCalendar(navigate, followUps = [], leads = []) {
@@ -77,21 +80,23 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
         ? 'w-7 h-7 rounded-full bg-forest text-white flex items-center justify-center text-xs font-bold'
         : 'text-xs font-semibold text-ink-mid';
 
-      const cellBorder = isToday ? 'border-forest/30 bg-canopy-light/30' : hasOverdue ? 'border-error/20 bg-error-bg/30' : 'border-transparent';
+      const hasHigh = dayItems.some(i => !i.completed && (i.lead?.priority === 'High' || i.lead?.priority === 'Critical'));
+      const cellBorder = isToday ? 'border-forest/30 bg-canopy-light/30' : hasOverdue ? 'border-error/20 bg-error-bg/30' : hasHigh ? 'border-stage-hot/15' : 'border-transparent';
 
       const dots = dayItems.slice(0, 3).map(item => {
-        const cc = catColour(item.lead);
-        const completed = item.completed;
-        return `<div class="w-2 h-2 rounded-full ${completed ? 'bg-surface-high' : cc.bg} ${cc.ring ? 'ring-1 ' + cc.ring : ''}" title="${item.lead?.org_name || ''}: ${item.follow_up_action || item.summary || ''}"></div>`;
+        const dc = dotColour(item);
+        return `<div class="w-2.5 h-2.5 rounded-full" style="background:${dc.hex};" title="${item.lead?.org_name || ''}: ${item.follow_up_action || item.summary || ''}"></div>`;
       }).join('');
 
       const overflow = dayItems.length > 3 ? `<span class="text-[9px] text-ink-ghost font-bold">+${dayItems.length - 3}</span>` : '';
 
-      // Click to filter task list by date
-      const onclick = dayItems.length > 0 ? `onclick="window.app._calFilterDate && window.app._calFilterDate('${dateStr}')"` : '';
+      // Click any date: dates with tasks filter the list, empty dates clear filter
+      const onclick = dayItems.length > 0
+        ? `onclick="window.app._calFilterDate && window.app._calFilterDate('${dateStr}')"`
+        : `onclick="window.app._calClearFilter && window.app._calClearFilter()"`;
 
       cells += `
-        <div class="h-20 md:h-24 p-1.5 border ${cellBorder} rounded-lg ${dayItems.length > 0 ? 'cursor-pointer hover:bg-surface-low' : ''} transition-colors" ${onclick}>
+        <div class="h-20 md:h-24 p-1.5 border ${cellBorder} rounded-lg cursor-pointer hover:bg-surface-low transition-colors" ${onclick}>
           <div class="${dayNumClass} mb-1">${isToday ? `<span>${d}</span>` : d}</div>
           <div class="flex items-center gap-1 flex-wrap">${dots}${overflow}</div>
         </div>`;
@@ -228,18 +233,30 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
               <!-- Calendar grids -->
               ${calGrids}
 
-              <!-- Legend -->
-              <div class="flex items-center gap-6 mt-5 pt-4 border-t border-border-soft">
-                <div class="flex items-center gap-2">
-                  <div class="w-2.5 h-2.5 rounded-full bg-copper"></div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Philanthropy</span>
+              <!-- Legend — shows urgency/priority colour mapping -->
+              <div class="flex flex-wrap items-center gap-5 mt-5 pt-4 border-t border-border-soft">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2.5 h-2.5 rounded-full" style="background:#8a3a3a;"></div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Overdue</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-2.5 h-2.5 rounded-full bg-canopy"></div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Investors</span>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2.5 h-2.5 rounded-full" style="background:#b0603a;"></div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">High</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-forest text-white flex items-center justify-center text-[9px] font-bold">${today.getDate()}</div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2.5 h-2.5 rounded-full" style="background:#b8860b;"></div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Medium</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2.5 h-2.5 rounded-full" style="background:#6b7d8a;"></div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Low</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2.5 h-2.5 rounded-full" style="background:#c8d8c4;"></div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Done</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-6 rounded-full bg-forest text-white flex items-center justify-center text-[9px] font-bold">${today.getDate()}</div>
                   <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Today</span>
                 </div>
               </div>

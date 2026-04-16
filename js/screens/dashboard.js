@@ -194,55 +194,12 @@ export function renderDashboard(navigate, leads = [], session = null) {
           </div>
         </section>
 
-        <!-- Quick pulse — three glass cards with premium forest icons -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-          <!-- Philanthropy -->
-          <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
-            <div class="flex items-start justify-between mb-4">
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-philanthropy">Philanthropy</p>
-              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
-                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">volunteer_activism</span>
-              </div>
-            </div>
-            <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${philanthropy.length}</p>
-            <p class="text-sm text-ink-soft">Leads</p>
-            <p class="text-xs text-ink-ghost mt-3">${philanthropy.filter(l => l.stage === 'Engaged' || l.stage === 'Contacted').length} actively engaged</p>
-          </div>
-
-          <!-- Investors -->
-          <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
-            <div class="flex items-start justify-between mb-4">
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-investor">Investors</p>
-              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
-                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">trending_up</span>
-              </div>
-            </div>
-            <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${investors.length}</p>
-            <p class="text-sm text-ink-soft">Leads</p>
-            <p class="text-xs text-ink-ghost mt-3">${investors.filter(l => l.ticket_size).length} with ticket sizes identified</p>
-          </div>
-
-          <!-- Total Pipeline — dark glass -->
-          <div class="card-deep rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#kanban')">
-            <div class="flex items-start justify-between mb-4">
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">Total Pipeline</p>
-              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
-                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">account_tree</span>
-              </div>
-            </div>
-            <p class="text-5xl font-bold text-white mb-2" style="font-family:'Fraunces',Georgia,serif;">${totalLeads}</p>
-            <p class="text-sm text-white/70">Leads</p>
-            <p class="text-xs text-white/40 mt-3">${newLeads.length} new · ${contacted.length} contacted · ${engaged.length} engaged</p>
-          </div>
-        </section>
-      </main>
-
-      <!-- ══════════════════════════════════════════════════
-           ZONE 2 — FUNDING GOALS (moved ABOVE lead stages)
-           Goal attainment indicators first — if none of the
-           leads land, the goal isn't reached
-           ══════════════════════════════════════════════════ -->
-      <div class="max-w-7xl mx-auto px-6 mt-10">
+        <!-- ══════════════════════════════════════════════════
+             FUNDING GOALS — first thing after welcome
+             Goal attainment indicators up top — psychologically
+             you see where you're going before you see the pipeline
+             ══════════════════════════════════════════════════ -->
+        <section class="mb-10">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
               <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">savings</span>
@@ -291,7 +248,50 @@ export function renderDashboard(navigate, leads = [], session = null) {
             </div>
             `).join('')}
           </div>
-      </div>
+        </section>
+
+        <!-- Quick pulse — three glass cards with premium forest icons -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+          <!-- Philanthropy -->
+          <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
+            <div class="flex items-start justify-between mb-4">
+              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-philanthropy">Philanthropy</p>
+              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">volunteer_activism</span>
+              </div>
+            </div>
+            <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${philanthropy.length}</p>
+            <p class="text-sm text-ink-soft">Leads</p>
+            <p class="text-xs text-ink-ghost mt-3">${philanthropy.filter(l => l.stage === 'Engaged' || l.stage === 'Contacted').length} actively engaged</p>
+          </div>
+
+          <!-- Investors -->
+          <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
+            <div class="flex items-start justify-between mb-4">
+              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-investor">Investors</p>
+              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">trending_up</span>
+              </div>
+            </div>
+            <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${investors.length}</p>
+            <p class="text-sm text-ink-soft">Leads</p>
+            <p class="text-xs text-ink-ghost mt-3">${investors.filter(l => l.ticket_size).length} with ticket sizes identified</p>
+          </div>
+
+          <!-- Total Pipeline — dark glass -->
+          <div class="card-deep rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#kanban')">
+            <div class="flex items-start justify-between mb-4">
+              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">Total Pipeline</p>
+              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">account_tree</span>
+              </div>
+            </div>
+            <p class="text-5xl font-bold text-white mb-2" style="font-family:'Fraunces',Georgia,serif;">${totalLeads}</p>
+            <p class="text-sm text-white/70">Leads</p>
+            <p class="text-xs text-white/40 mt-3">${newLeads.length} new · ${contacted.length} contacted · ${engaged.length} engaged</p>
+          </div>
+        </section>
+      </main>
 
       <!-- ══════════════════════════════════════════════════
            ZONE 3 — PIPELINE INTELLIGENCE

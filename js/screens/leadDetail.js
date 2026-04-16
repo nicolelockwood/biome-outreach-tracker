@@ -1,5 +1,22 @@
 import { navHTML, stageColourClass } from './dashboard.js';
 
+// Subtle stage-tinted glass background for the engagement value strip
+// Not a full colour — just enough tint to hint at "where we are at"
+function stageGlassBg(stage) {
+  const tints = {
+    'New':               'linear-gradient(135deg, rgba(107,125,138,0.08), rgba(255,255,255,0.90))',
+    'Contacted':         'linear-gradient(135deg, rgba(61,139,99,0.08), rgba(255,255,255,0.90))',
+    'Engaged':           'linear-gradient(135deg, rgba(184,134,11,0.08), rgba(255,255,255,0.90))',
+    'Meeting Set':       'linear-gradient(135deg, rgba(176,96,58,0.08), rgba(255,255,255,0.90))',
+    'Proposal Sent':     'linear-gradient(135deg, rgba(176,96,58,0.08), rgba(255,255,255,0.90))',
+    'Awaiting Response': 'linear-gradient(135deg, rgba(138,106,58,0.08), rgba(255,255,255,0.90))',
+    'Secured':           'linear-gradient(135deg, rgba(20,52,42,0.10), rgba(255,255,255,0.90))',
+    'Parked':            'linear-gradient(135deg, rgba(106,122,114,0.08), rgba(255,255,255,0.90))',
+    'Closed':            'linear-gradient(135deg, rgba(106,122,114,0.08), rgba(255,255,255,0.90))',
+  };
+  return tints[stage] || 'rgba(255,255,255,0.92)';
+}
+
 export function renderLeadDetail(lead, interactions = [], navigate, showInteractionModal) {
   if (!lead) return `
     <div class="min-h-screen flex items-center justify-center">
@@ -85,8 +102,8 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               </div>
             </section>
 
-            <!-- Ticket / value strip — compact, glass-backed -->
-            <div class="card rounded-2xl p-5 flex items-center gap-5">
+            <!-- Ticket / value strip — stage-tinted glass so you can see "where we're at" as you scroll -->
+            <div class="rounded-2xl p-5 flex items-center gap-5" style="background: ${stageGlassBg(lead.stage)}; backdrop-filter: blur(28px) saturate(1.5); -webkit-backdrop-filter: blur(28px) saturate(1.5); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 2px 8px rgba(20,52,42,0.06), 0 8px 32px rgba(20,52,42,0.08), inset 0 1px 0 rgba(255,255,255,0.6);">
               <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(20,52,42,0.08);">
                 <span class="material-symbols-outlined text-forest text-lg" style="font-variation-settings:'FILL' 1;">${isPhil ? 'volunteer_activism' : 'payments'}</span>
               </div>

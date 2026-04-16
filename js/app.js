@@ -130,6 +130,8 @@ class App {
 
   closeInteractionModal() {
     this.showingModal = false;
+    const wrapper = document.getElementById('interaction-modal-wrapper');
+    if (wrapper) wrapper.remove();
     this.render();
   }
 
@@ -142,29 +144,45 @@ class App {
 
   closeOutcomeModal() {
     this.showingOutcomeModal = false;
+    const wrapper = document.getElementById('outcome-modal-wrapper');
+    if (wrapper) wrapper.remove();
     this.render();
   }
 
   renderOutcome() {
-    const existing = document.getElementById('outcome-modal-wrapper');
-    if (existing) existing.remove();
-    const container = document.createElement('div');
-    container.id = 'outcome-modal-wrapper';
-    container.innerHTML = renderOutcomeModal(this.currentLeadId, this.outcomeStage);
-    this.appElement.appendChild(container);
+    try {
+      const existing = document.getElementById('outcome-modal-wrapper');
+      if (existing) existing.remove();
+      const container = document.createElement('div');
+      container.id = 'outcome-modal-wrapper';
+      container.innerHTML = renderOutcomeModal(this.currentLeadId, this.outcomeStage);
+      document.body.appendChild(container);
+      // Scroll the modal overlay to top so form is visible
+      const overlay = container.querySelector('.fixed');
+      if (overlay) overlay.scrollTop = 0;
+    } catch (e) {
+      console.error('Outcome modal render error:', e);
+    }
   }
 
   renderModal() {
-    const existingModal = document.getElementById('interaction-modal-wrapper');
-    if (existingModal) existingModal.remove();
+    try {
+      const existingModal = document.getElementById('interaction-modal-wrapper');
+      if (existingModal) existingModal.remove();
 
-    const modalContainer = document.createElement('div');
-    modalContainer.id = 'interaction-modal-wrapper';
-    modalContainer.innerHTML = renderInteractionModal(
-      this.currentLeadId,
-      () => this.closeInteractionModal()
-    );
-    this.appElement.appendChild(modalContainer);
+      const modalContainer = document.createElement('div');
+      modalContainer.id = 'interaction-modal-wrapper';
+      modalContainer.innerHTML = renderInteractionModal(
+        this.currentLeadId,
+        () => this.closeInteractionModal()
+      );
+      document.body.appendChild(modalContainer);
+      // Scroll the modal overlay to top so form is visible
+      const overlay = modalContainer.querySelector('.fixed');
+      if (overlay) overlay.scrollTop = 0;
+    } catch (e) {
+      console.error('Interaction modal render error:', e);
+    }
   }
 
   showLoading() {

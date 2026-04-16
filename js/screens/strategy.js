@@ -284,12 +284,13 @@ export function renderStrategy(navigate) {
           `}).join('')}
         </div>
 
-        <!-- Footer note -->
-        <div class="mt-12 p-6 rounded-2xl card-warm">
+        <!-- Footer note — same glassmorphism family as the stage cards, slightly softer
+             to read as a "side note" rather than a stage, but same visual language -->
+        <div class="mt-12 p-6 rounded-2xl" style="background: rgba(255,255,255,0.72); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); border: 1.5px solid rgba(255,255,255,0.35); box-shadow: 0 2px 12px rgba(20,52,42,0.06);">
           <div class="flex items-start gap-3">
-            <span class="material-symbols-outlined text-copper text-xl shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1;">eco</span>
+            <span class="material-symbols-outlined text-canopy text-xl shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1;">eco</span>
             <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-copper mb-2">Remember</p>
+              <p class="text-xs font-bold uppercase tracking-wider text-canopy mb-2">Remember</p>
               <p class="text-sm text-ink-mid leading-relaxed">
                 Every lead is a person, not a number. The most successful capital conversations happen when people feel genuinely understood and respected — not processed. Move at the pace of trust, not the pace of your timeline.
               </p>
