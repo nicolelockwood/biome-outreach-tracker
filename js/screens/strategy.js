@@ -188,18 +188,16 @@ export function renderStrategy(navigate) {
     <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('strategy')}
 
-      <!-- Glass hero band — frosted forest green, canopy shows through -->
-      <div class="text-white py-14 mb-10" style="background: rgba(20,52,42,0.75); backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div class="max-w-5xl mx-auto px-6">
+      <main class="max-w-5xl mx-auto px-6 pb-16">
+
+        <!-- Hero — clean, no band -->
+        <section class="pt-10 mb-10">
           <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/40 mb-3">Sales Playbook</p>
-          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold leading-tight mb-4">Pipeline Strategy</h1>
-          <p class="text-white/65 text-base max-w-2xl leading-relaxed">
+          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-white drop-shadow-sm leading-tight mb-4">Pipeline Strategy</h1>
+          <p class="text-white/60 text-base max-w-2xl leading-relaxed">
             Stage-by-stage guidance for converting ecological capital conversations into committed relationships. Treat every interaction as a trust deposit, not a transaction.
           </p>
-        </div>
-      </div>
-
-      <main class="max-w-5xl mx-auto px-6 pb-16">
+        </section>
 
         <!-- Stages — all start closed, uniform glassmorphism -->
         <div class="space-y-5">

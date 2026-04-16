@@ -27,7 +27,7 @@ export function navHTML(active = 'dashboard') {
         ${link('leads', 'Leads', 'leads')}
         ${link('calendar', 'Follow-ups', 'calendar')}
         ${link('strategy', 'Strategy', 'strategy')}
-        ${link('archive', 'Archive', 'archive')}
+        ${link('archive', 'Secured', 'archive')}
       </nav>
 
       <!-- Right side -->

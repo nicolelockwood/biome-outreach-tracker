@@ -159,10 +159,10 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
 
         <!-- Hero -->
         <section class="mb-10">
-          <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/50 mb-3">Secured Funding</p>
-          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-white drop-shadow-sm leading-tight mb-3">Funding Archive</h1>
+          <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/50 mb-3">Partnerships Landed</p>
+          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-white drop-shadow-sm leading-tight mb-3">Secured</h1>
           <p class="text-white/70 text-base max-w-xl leading-relaxed">
-            A permanent record of every commitment landed — full relationship trail included.
+            Every commitment landed, every relationship that crossed the line — with the full trail of how you got there.
           </p>
         </section>
 
@@ -244,7 +244,7 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
         </a>
         <a class="flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-forest text-white cursor-pointer" onclick="window.app.navigate('#archive')">
           <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">workspace_premium</span>
-          <span class="text-[9px] font-bold uppercase tracking-wider">Archive</span>
+          <span class="text-[9px] font-bold uppercase tracking-wider">Secured</span>
         </a>
       </nav>
     </div>
