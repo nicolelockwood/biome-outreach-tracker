@@ -148,24 +148,6 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               </button>
             </div>
 
-            <!-- Tags & context -->
-            <section class="card rounded-2xl p-6">
-              <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-5">Context</p>
-              <div class="space-y-5">
-                <div>
-                  <p class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost mb-2">Sector</p>
-                  <span class="px-3 py-1 ${isPhil ? 'bg-meadow text-forest' : 'bg-surface-mid text-ink-soft'} rounded-full text-[11px] font-bold">${lead.category}</span>
-                </div>
-                <div>
-                  <p class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost mb-2">Tags</p>
-                  <div class="flex flex-wrap gap-2">
-                    ${tags.length > 0
-                      ? tags.map(tag => `<span class="px-2 py-0.5 bg-meadow text-forest rounded-full text-[10px] font-bold">#${tag}</span>`).join('')
-                      : '<span class="text-xs text-ink-ghost italic">No tags</span>'}
-                  </div>
-                </div>
-              </div>
-            </section>
           </div>
         </div>
       </main>

@@ -93,15 +93,21 @@ export function renderDashboard(navigate, leads = [], session = null) {
               <strong class="text-ink-mid font-semibold">${activeLeads}</strong> are actively in your pipeline.
             </p>
           </div>
-          <!-- Active pipeline card -->
-          <div class="card rounded-2xl p-6 flex items-center gap-6 shrink-0">
-            <div>
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-1">Active Pipeline</p>
-              <p class="text-3xl font-bold text-forest">${contacted.length + engaged.length} <span class="text-lg font-semibold text-ink-soft">In Motion</span></p>
+          <!-- Active pipeline card + New Lead -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
+            <div class="card rounded-2xl p-6 flex items-center gap-6">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-1">Active Pipeline</p>
+                <p class="text-3xl font-bold text-forest">${contacted.length + engaged.length} <span class="text-lg font-semibold text-ink-soft">In Motion</span></p>
+              </div>
+              <div class="w-px h-10 bg-border"></div>
+              <button class="btn-primary px-5 py-3 rounded-xl font-semibold text-sm" onclick="window.app.navigate('#leads')">
+                View List →
+              </button>
             </div>
-            <div class="w-px h-10 bg-border"></div>
-            <button class="btn-primary px-5 py-3 rounded-xl font-semibold text-sm" onclick="window.app.navigate('#leads')">
-              View List →
+            <button class="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-sm border-2 border-forest text-forest hover:bg-forest hover:text-white transition-all duration-200 cursor-pointer" onclick="window.app.navigate('#add-lead')">
+              <span class="material-symbols-outlined text-base">add</span>
+              New Lead
             </button>
           </div>
         </section>
@@ -183,10 +189,10 @@ export function renderDashboard(navigate, leads = [], session = null) {
 
             <div class="space-y-4 mb-6">
               ${priorityLeads.map(lead => `
-              <div class="card rounded-2xl p-5 cursor-pointer border-l-4 ${lead.priority === 'Critical' ? 'border-l-error' : 'border-l-canopy'} hover:cursor-pointer" onclick="window.app.navigate('#lead/${lead.id}')">
+              <div class="card rounded-2xl p-5 cursor-pointer border-l-4 ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'border-l-error' : 'border-l-canopy'} hover:cursor-pointer" onclick="window.app.navigate('#lead/${lead.id}')">
                 <div class="flex items-start justify-between mb-2">
                   <h4 class="font-semibold text-forest text-base leading-tight">${lead.org_name}</h4>
-                  <span class="material-symbols-outlined text-sm ${lead.priority === 'Critical' ? 'text-error dot-critical' : 'text-canopy'}" style="font-variation-settings:'FILL' 1;">priority_high</span>
+                  <span class="material-symbols-outlined text-sm ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'text-error' : 'text-canopy'}" style="font-variation-settings:'FILL' 1;">priority_high</span>
                 </div>
                 <p class="text-sm text-ink-soft mb-3 line-clamp-2 leading-relaxed">${lead.action || lead.comments || 'No action noted'}</p>
                 <div class="flex items-center gap-2">

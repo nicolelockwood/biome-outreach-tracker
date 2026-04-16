@@ -2,21 +2,24 @@ import { navHTML } from './dashboard.js';
 
 function renderCard(lead) {
   const isPhilanthropy = lead.category === 'Philanthropy';
-  const isCritical = lead.priority === 'Critical';
-  const isHigh = lead.priority === 'High';
+  const isHigh = lead.priority === 'Critical' || lead.priority === 'High';
+  const isMed  = lead.priority === 'Medium' || (!isHigh && lead.priority !== 'Low');
+  const isLow  = lead.priority === 'Low';
 
-  const priorityBadge = isCritical
-    ? '<span class="px-2 py-0.5 bg-error/10 text-error text-[9px] font-bold uppercase tracking-wider rounded-full">Critical</span>'
-    : isHigh
-    ? '<span class="px-2 py-0.5 bg-canopy/10 text-canopy text-[9px] font-bold uppercase tracking-wider rounded-full">High</span>'
-    : `<span class="px-2 py-0.5 bg-surface-mid text-ink-ghost text-[9px] font-bold uppercase tracking-wider rounded-full">${lead.priority || 'Med'}</span>`;
+  const priorityBadge = isHigh
+    ? '<span class="px-2 py-0.5 bg-error/10 text-error text-[9px] font-bold uppercase tracking-wider rounded-full">High</span>'
+    : isLow
+    ? '<span class="px-2 py-0.5 bg-meadow text-forest text-[9px] font-bold uppercase tracking-wider rounded-full">Low</span>'
+    : '<span class="px-2 py-0.5 bg-canopy/15 text-canopy text-[9px] font-bold uppercase tracking-wider rounded-full">Med</span>';
+
+  const borderClass = isHigh ? 'border-l-error' : isLow ? 'border-l-meadow-mid' : 'border-l-canopy';
 
   const categoryBadge = isPhilanthropy
     ? '<span class="px-2 py-0.5 bg-meadow text-forest text-[9px] font-bold uppercase tracking-wider rounded-full">Philanthropy</span>'
     : '<span class="px-2 py-0.5 bg-surface-mid text-ink-soft text-[9px] font-bold uppercase tracking-wider rounded-full">Investor</span>';
 
   return `
-    <article class="card rounded-2xl p-5 cursor-pointer border-l-2 ${isCritical ? 'border-l-error' : isHigh ? 'border-l-canopy' : 'border-l-border'}"
+    <article class="card rounded-2xl p-5 cursor-pointer border-l-2 ${borderClass}"
       onclick="window.app.navigate('#lead/${lead.id}')">
       <div class="flex items-start justify-between gap-2 mb-3">
         ${categoryBadge}
