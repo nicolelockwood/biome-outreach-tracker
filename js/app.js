@@ -4,9 +4,10 @@ import { renderLeads } from './screens/leads.js';
 import { renderKanban } from './screens/kanban.js';
 import { renderLeadDetail } from './screens/leadDetail.js';
 import { renderAddLead } from './screens/addLead.js';
+import { renderEditLead } from './screens/editLead.js';
 import { renderInteractionModal } from './screens/interactionModal.js';
 import { renderImportLeads, renderExportData, renderNotifications, renderTeamManagement } from './screens/placeholders.js';
-import { supabase, getLeads, getInteractions, createLead, createInteraction } from './supabase.js';
+import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead } from './supabase.js';
 
 class App {
   constructor() {
@@ -100,6 +101,15 @@ class App {
 
   async saveInteraction(interactionData) {
     const { data, error } = await createInteraction(interactionData);
+    return { data, error };
+  }
+
+  async updateLead(id, updates) {
+    const { data, error } = await updateLead(id, updates);
+    if (!error && data) {
+      const idx = this.leads.findIndex(l => l.id === id);
+      if (idx !== -1) this.leads[idx] = data;
+    }
     return { data, error };
   }
 
@@ -198,6 +208,11 @@ class App {
       }
     } else if (hash === 'add-lead') {
       content = renderAddLead(this.navigate.bind(this));
+    } else if (hash.startsWith('edit-lead/')) {
+      const editIdRaw = hash.split('/')[1];
+      const editId = parseInt(editIdRaw);
+      const leadToEdit = isNaN(editId) ? null : (this.leads.find(l => l.id === editId) || null);
+      content = renderEditLead(leadToEdit, this.navigate.bind(this));
     } else if (hash === 'import') {
       content = renderImportLeads();
     } else if (hash === 'export') {

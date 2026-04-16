@@ -11,7 +11,10 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
   `;
 
   const tags = Array.isArray(lead.tags) ? lead.tags : [];
-  const isPhil = lead.category === 'Philanthropy';
+  const cats = lead.category ? lead.category.split(',') : [];
+  const isPhil = cats.includes('Philanthropy');
+  const isBoth = cats.includes('Philanthropy') && cats.includes('Investors');
+  const categoryDisplay = isBoth ? 'Investor + Philanthropy' : (lead.category || '—');
 
   const stageColour = (stage) => {
     if (stage === 'Engaged')   return 'bg-canopy/10 text-canopy';
@@ -41,10 +44,16 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
             </div>
             <p class="text-ink-soft text-base">${lead.contact_title || 'Contact'} · ${lead.org_name}</p>
           </div>
-          <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shrink-0 self-start" onclick="window.app.showInteractionModal(${lead.id})">
-            <span class="material-symbols-outlined text-base">add</span>
-            Log Interaction
-          </button>
+          <div class="flex items-center gap-3 shrink-0 self-start">
+            <button class="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm border-2 border-forest text-forest hover:bg-forest hover:text-white transition-all duration-200 cursor-pointer" onclick="window.app.navigate('#edit-lead/${lead.id}')">
+              <span class="material-symbols-outlined text-base">edit</span>
+              Edit Lead
+            </button>
+            <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2" onclick="window.app.showInteractionModal(${lead.id})">
+              <span class="material-symbols-outlined text-base">add</span>
+              Log Interaction
+            </button>
+          </div>
         </div>
 
         <!-- Grid -->
@@ -58,10 +67,10 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-6">Lead Overview</p>
               <div class="grid grid-cols-2 gap-6">
                 ${[
-                  ['Lead Type',      isPhil ? 'Philanthropy' : 'Investor'],
+                  ['Lead Type',      categoryDisplay],
                   ['Current Stage',  lead.stage],
                   ['Priority',       lead.priority || '—'],
-                  ['Category',       lead.category],
+                  ['Category',       categoryDisplay],
                   ['Region',         lead.region || 'Australia'],
                   ['Ticket Size',    lead.ticket_size || 'TBC'],
                 ].map(([label, val]) => `
@@ -87,7 +96,7 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               <div class="absolute right-6 top-6 opacity-10">
                 <span class="material-symbols-outlined text-8xl">${isPhil ? 'volunteer_activism' : 'payments'}</span>
               </div>
-              <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">${isPhil ? 'Engagement Details' : 'Investment Value'}</p>
+              <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">${isBoth ? 'Investment & Engagement' : isPhil ? 'Engagement Details' : 'Investment Value'}</p>
               <p class="text-4xl font-bold text-white leading-tight" style="font-family:'Fraunces',Georgia,serif;">${lead.ticket_size || 'TBC'}</p>
               <div class="flex items-center gap-3 mt-2">
                 <span class="px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase text-white/70">${lead.priority || 'Medium'} priority</span>
@@ -132,7 +141,33 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
           <!-- Right sidebar -->
           <div class="md:col-span-4 space-y-6">
 
-            <!-- Next follow-up -->
+            <!-- Contact Info -->
+            ${(lead.phone || lead.email || lead.website) ? `
+            <div class="card rounded-2xl p-6">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-forest text-base">contacts</span>
+                <h3 class="font-semibold text-forest text-base" style="font-family:'Fraunces',Georgia,serif;">Contact Info</h3>
+              </div>
+              <div class="space-y-3">
+                ${lead.phone ? `
+                <a href="tel:${lead.phone}" class="flex items-center gap-3 text-sm text-ink-mid hover:text-forest transition-colors group">
+                  <span class="material-symbols-outlined text-ink-ghost text-base group-hover:text-forest transition-colors">call</span>
+                  ${lead.phone}
+                </a>` : ''}
+                ${lead.email ? `
+                <a href="mailto:${lead.email}" class="flex items-center gap-3 text-sm text-ink-mid hover:text-forest transition-colors group">
+                  <span class="material-symbols-outlined text-ink-ghost text-base group-hover:text-forest transition-colors">mail</span>
+                  ${lead.email}
+                </a>` : ''}
+                ${lead.website ? `
+                <a href="${lead.website}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-sm text-ink-mid hover:text-forest transition-colors group">
+                  <span class="material-symbols-outlined text-ink-ghost text-base group-hover:text-forest transition-colors">language</span>
+                  <span class="truncate">${lead.website.replace(/^https?:\/\//, '')}</span>
+                </a>` : ''}
+              </div>
+            </div>` : ''}
+
+          <!-- Next follow-up -->
             <div class="card rounded-2xl p-6 bg-surface-low">
               <div class="flex items-center gap-2 mb-4">
                 <span class="material-symbols-outlined text-forest text-base">alarm</span>
