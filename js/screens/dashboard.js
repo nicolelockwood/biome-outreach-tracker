@@ -7,17 +7,16 @@ export function navHTML(active = 'dashboard') {
       : 'text-ink-soft hover:text-forest transition-colors'} text-sm cursor-pointer tracking-wide" onclick="window.app.navigate('#${hash}')">${label}</a>`;
   };
   return `
-  <header class="glass-nav sticky top-0 z-50 border-b border-border-soft">
+  <header class="glass-nav sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-3 cursor-pointer" onclick="window.app.navigate('#dashboard')">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="32" height="32" rx="8" fill="#1a3d2b"/>
-          <path d="M16 6 C10 6 7 11 8 17 C9 20 12 22 16 22 C20 22 23 20 24 17 C25 11 22 6 16 6Z" fill="#00c566" opacity="0.9"/>
-          <path d="M16 14 L16 26" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M16 20 C14 18 12 18 11 19" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
-          <path d="M16 18 C18 16 20 16 21 17" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
-        </svg>
+        <div class="w-8 h-8 rounded-lg icon-forest flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C8 2 4 5.5 4 10c0 2.5 1.2 4.8 3 6.2V20h10v-3.8c1.8-1.4 3-3.7 3-6.2 0-4.5-4-8-8-8z" fill="#3d8b63" opacity="0.9"/>
+            <path d="M9 20v2h6v-2H9z" fill="#3d8b63" opacity="0.6"/>
+          </svg>
+        </div>
         <span style="font-family:'Fraunces',Georgia,serif;" class="text-forest font-bold text-xl tracking-tight">Biome</span>
       </div>
 
@@ -33,8 +32,8 @@ export function navHTML(active = 'dashboard') {
 
       <!-- Right side -->
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-forest flex items-center justify-center cursor-pointer" onclick="window.app.signOut()" title="Sign out">
-          <svg width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M16 6 C10 6 7 11 8 17 C9 20 12 22 16 22 C20 22 23 20 24 17 C25 11 22 6 16 6Z" fill="#00c566"/><path d="M16 14 L16 26" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div class="w-9 h-9 rounded-full icon-forest flex items-center justify-center cursor-pointer" onclick="window.app.signOut()" title="Sign out">
+          <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">logout</span>
         </div>
       </div>
     </div>
@@ -110,12 +109,12 @@ export function renderDashboard(navigate, leads = [], session = null) {
   const maxCount = Math.max(...stages.map(s => s.count), 1);
 
   return `
-    <div class="min-h-screen bg-white pb-24 md:pb-0">
+    <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('dashboard')}
 
       <main class="max-w-7xl mx-auto px-6 pt-10">
 
-        <!-- ── Overdue alert (shown only when there are overdue follow-ups from leads.next_follow_up) ── -->
+        <!-- ── Overdue alert ── -->
         ${(() => {
           const today = new Date(); today.setHours(0,0,0,0);
           const overdue = ls.filter(l => {
@@ -124,31 +123,33 @@ export function renderDashboard(navigate, leads = [], session = null) {
           });
           if (overdue.length === 0) return '';
           return `
-          <div class="mb-8 flex items-center gap-4 px-5 py-4 bg-error/5 border border-error/20 rounded-2xl cursor-pointer" onclick="window.app.navigate('#calendar')">
-            <span class="material-symbols-outlined text-error text-xl shrink-0">warning</span>
+          <div class="mb-8 flex items-center gap-4 px-5 py-4 card rounded-2xl cursor-pointer" style="background: rgba(138,58,58,0.08); border: 1px solid rgba(138,58,58,0.15);" onclick="window.app.navigate('#calendar')">
+            <span class="material-symbols-outlined text-urgent text-xl shrink-0">warning</span>
             <div class="flex-1">
-              <p class="text-sm font-bold text-error">
+              <p class="text-sm font-bold text-urgent">
                 ${overdue.length} overdue follow-up${overdue.length > 1 ? 's' : ''} — ${overdue.map(l => l.org_name).slice(0,3).join(', ')}${overdue.length > 3 ? ` + ${overdue.length - 3} more` : ''}
               </p>
-              <p class="text-xs text-error/70">Tap to view your follow-up task list →</p>
+              <p class="text-xs text-urgent/70">Tap to view your follow-up task list →</p>
             </div>
-            <span class="material-symbols-outlined text-error/50 text-base">chevron_right</span>
+            <span class="material-symbols-outlined text-urgent/50 text-base">chevron_right</span>
           </div>`;
         })()}
 
-        <!-- ── Hero ──────────────────────────────────────── -->
-        <section class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <!-- ══════════════════════════════════════════════════
+             ZONE 1 — WELCOME + PULSE
+             The entry hall: warm, spacious, orienting
+             ══════════════════════════════════════════════════ -->
+        <section class="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <p class="text-xs font-bold uppercase tracking-[0.15em] text-ink-ghost mb-3">Portfolio Overview · My Leads</p>
-            <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl md:text-6xl font-semibold text-forest mb-4 leading-tight">
+            <p class="text-xs font-bold uppercase tracking-[0.15em] text-white/50 mb-3">Portfolio Overview</p>
+            <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl md:text-6xl font-semibold text-white mb-4 leading-tight drop-shadow-sm">
               Welcome, ${userName}
             </h1>
-            <p class="text-ink-soft text-lg max-w-xl leading-relaxed">
-              You're managing <strong class="text-ink-mid font-semibold">${totalLeads} leads</strong> across Philanthropy and Investors.
-              <strong class="text-ink-mid font-semibold">${activeLeads}</strong> are actively in your pipeline.
+            <p class="text-white/70 text-lg max-w-xl leading-relaxed">
+              You're managing <strong class="text-white font-semibold">${totalLeads} leads</strong> across Philanthropy and Investors.
+              <strong class="text-white font-semibold">${activeLeads}</strong> are actively in your pipeline.
             </p>
           </div>
-          <!-- Active pipeline card + New Lead -->
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
             <div class="card rounded-2xl p-6 flex items-center gap-6">
               <div>
@@ -167,13 +168,14 @@ export function renderDashboard(navigate, leads = [], session = null) {
           </div>
         </section>
 
-        <!-- ── Stat Cards ─────────────────────────────────── -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
+        <!-- Quick pulse — three glass cards with premium forest icons -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+          <!-- Philanthropy -->
           <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
             <div class="flex items-start justify-between mb-4">
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-ghost">Philanthropy</p>
-              <div class="w-8 h-8 rounded-lg bg-meadow flex items-center justify-center">
-                <span class="material-symbols-outlined text-forest text-sm" style="font-variation-settings:'FILL' 1;">favorite</span>
+              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-philanthropy">Philanthropy</p>
+              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">volunteer_activism</span>
               </div>
             </div>
             <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${philanthropy.length}</p>
@@ -181,11 +183,12 @@ export function renderDashboard(navigate, leads = [], session = null) {
             <p class="text-xs text-ink-ghost mt-3">${philanthropy.filter(l => l.stage === 'Engaged' || l.stage === 'Contacted').length} actively engaged</p>
           </div>
 
+          <!-- Investors -->
           <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
             <div class="flex items-start justify-between mb-4">
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-ghost">Investors</p>
-              <div class="w-8 h-8 rounded-lg bg-meadow flex items-center justify-center">
-                <span class="material-symbols-outlined text-forest text-sm" style="font-variation-settings:'FILL' 1;">trending_up</span>
+              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-investor">Investors</p>
+              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">trending_up</span>
               </div>
             </div>
             <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${investors.length}</p>
@@ -193,11 +196,12 @@ export function renderDashboard(navigate, leads = [], session = null) {
             <p class="text-xs text-ink-ghost mt-3">${investors.filter(l => l.ticket_size).length} with ticket sizes identified</p>
           </div>
 
-          <div class="card rounded-2xl p-8 group hover:cursor-pointer bg-forest text-white border-0" onclick="window.app.navigate('#kanban')">
+          <!-- Total Pipeline — dark glass -->
+          <div class="card-deep rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#kanban')">
             <div class="flex items-start justify-between mb-4">
               <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">Total Pipeline</p>
-              <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                <span class="material-symbols-outlined text-canopy text-sm" style="font-variation-settings:'FILL' 1;">account_tree</span>
+              <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">account_tree</span>
               </div>
             </div>
             <p class="text-5xl font-bold text-white mb-2" style="font-family:'Fraunces',Georgia,serif;">${totalLeads}</p>
@@ -205,73 +209,92 @@ export function renderDashboard(navigate, leads = [], session = null) {
             <p class="text-xs text-white/40 mt-3">${newLeads.length} new · ${contacted.length} contacted · ${engaged.length} engaged</p>
           </div>
         </section>
+      </main>
 
-        <!-- ── Goal Indicators ───────────────────────────────── -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-14">
-          ${[
-            { label: 'Philanthropy Goal', goal: PHIL_GOAL, g: philGoal, icon: 'volunteer_activism', colour: 'canopy' },
-            { label: 'Investment Goal',   goal: INV_GOAL,  g: invGoal,  icon: 'payments',           colour: 'forest' },
-          ].map(({ label, goal, g, icon, colour }) => `
-          <div class="card rounded-2xl p-7">
-            <div class="flex items-start justify-between mb-5">
-              <div>
-                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-1">${label}</p>
-                <p class="text-3xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(goal)}</p>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-meadow flex items-center justify-center">
-                <span class="material-symbols-outlined text-forest" style="font-variation-settings:'FILL' 1;">${icon}</span>
-              </div>
+      <!-- ══════════════════════════════════════════════════
+           ZONE 2 — FUNDING GOALS
+           A distinct warm band — feels like stepping into
+           the financial room. Different background, different weight.
+           ══════════════════════════════════════════════════ -->
+      <div class="max-w-7xl mx-auto px-6 mt-10">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+              <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">savings</span>
             </div>
-            <!-- Progress bar -->
-            <div class="w-full h-3 rounded-full bg-surface-high overflow-hidden flex mb-4">
-              <div class="h-full rounded-l-full bg-forest transition-all duration-700" style="width:${g.landedPct}%"></div>
-              <div class="h-full bg-canopy/50 transition-all duration-700" style="width:${g.potentialPct}%"></div>
-            </div>
-            <!-- Stats row -->
-            <div class="grid grid-cols-3 gap-2">
-              <div class="bg-surface-low rounded-xl p-3 text-center">
-                <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Landed</p>
-                <p class="text-sm font-bold text-forest">${fmtM(g.landed)}</p>
-              </div>
-              <div class="bg-meadow rounded-xl p-3 text-center">
-                <p class="text-[9px] font-bold uppercase tracking-wider text-forest/60 mb-1">Potential</p>
-                <p class="text-sm font-bold text-forest">${fmtM(g.potential)}</p>
-              </div>
-              <div class="bg-surface-low rounded-xl p-3 text-center">
-                <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Still Needed</p>
-                <p class="text-sm font-bold text-ink-mid">${fmtM(g.remaining)}</p>
-              </div>
-            </div>
-            <p class="text-[10px] text-ink-ghost mt-3">
-              ${g.landedPct}% secured · ${g.potentialPct}% in pipeline · Mark a lead as <strong class="text-forest">Secured</strong> when funding lands
-            </p>
+            <h2 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-white drop-shadow-sm">Funding Goals</h2>
           </div>
-          `).join('')}
-        </section>
 
-        <!-- ── Main Grid ───────────────────────────────────── -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ${[
+              { label: 'Philanthropy Goal', goal: PHIL_GOAL, g: philGoal, icon: 'volunteer_activism', accentColor: '#5a8a4a', barColor: '#5a8a4a' },
+              { label: 'Investment Goal',   goal: INV_GOAL,  g: invGoal,  icon: 'payments',           accentColor: '#2a6a5a', barColor: '#2a6a5a' },
+            ].map(({ label, goal, g, icon, accentColor, barColor }) => `
+            <div class="card rounded-2xl p-7">
+              <div class="flex items-start justify-between mb-5">
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-1">${label}</p>
+                  <p class="text-3xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(goal)}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl icon-forest flex items-center justify-center">
+                  <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1;">${icon}</span>
+                </div>
+              </div>
+              <!-- Progress bar -->
+              <div class="w-full h-3 rounded-full overflow-hidden flex mb-4" style="background: rgba(20,52,42,0.08);">
+                <div class="h-full rounded-l-full transition-all duration-700" style="width:${g.landedPct}%; background: ${barColor};"></div>
+                <div class="h-full transition-all duration-700" style="width:${g.potentialPct}%; background: ${barColor}; opacity: 0.3;"></div>
+              </div>
+              <!-- Stats row -->
+              <div class="grid grid-cols-3 gap-2">
+                <div class="rounded-xl p-3 text-center" style="background: rgba(255,255,255,0.5);">
+                  <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Landed</p>
+                  <p class="text-sm font-bold text-forest">${fmtM(g.landed)}</p>
+                </div>
+                <div class="rounded-xl p-3 text-center" style="background: ${accentColor}10;">
+                  <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Potential</p>
+                  <p class="text-sm font-bold text-forest">${fmtM(g.potential)}</p>
+                </div>
+                <div class="rounded-xl p-3 text-center" style="background: rgba(255,255,255,0.5);">
+                  <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Still Needed</p>
+                  <p class="text-sm font-bold text-ink-mid">${fmtM(g.remaining)}</p>
+                </div>
+              </div>
+              <p class="text-[10px] text-ink-ghost mt-3">
+                ${g.landedPct}% secured · ${g.potentialPct}% in pipeline · Mark a lead as <strong class="text-forest">Secured</strong> when funding lands
+              </p>
+            </div>
+            `).join('')}
+          </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           ZONE 3 — PIPELINE INTELLIGENCE
+           Back to the main room. Distribution + Priority.
+           ══════════════════════════════════════════════════ -->
+      <div class="max-w-7xl mx-auto px-6 pt-10 pb-16">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
           <!-- Stage Distribution -->
           <div class="lg:col-span-7">
             <div class="flex items-center justify-between mb-6">
-              <h2 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-forest">Lead Stage Distribution</h2>
-              <button class="text-xs font-bold text-ink-soft hover:text-forest transition-colors" onclick="window.app.navigate('#kanban')">View Pipeline →</button>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                  <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">bar_chart</span>
+                </div>
+                <h2 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-white drop-shadow-sm">Lead Stages</h2>
+              </div>
+              <button class="text-xs font-bold text-white/60 hover:text-white transition-colors" onclick="window.app.navigate('#kanban')">View Pipeline →</button>
             </div>
             <div class="card rounded-2xl overflow-hidden">
               ${stages.map((s, i) => `
               <div class="flex items-center gap-4 px-6 py-5 ${i < stages.length - 1 ? 'border-b border-border-soft' : ''} group hover:bg-surface-low transition-colors">
-                <!-- Bar track -->
                 <div class="w-1 h-10 rounded-full bg-surface-high overflow-hidden shrink-0">
                   <div class="${s.bar} bar-fill h-full rounded-full" style="height:${Math.round(s.count / maxCount * 100)}%"></div>
                 </div>
-                <!-- Label -->
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-sm text-ink-mid">${s.label}</p>
                 </div>
-                <!-- Count -->
                 <p class="text-sm font-bold text-forest w-20 text-center">${s.count} Lead${s.count !== 1 ? 's' : ''}</p>
-                <!-- Badge -->
                 <span class="hidden sm:inline px-3 py-1 ${s.badge} text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0">${s.tag}</span>
               </div>
               `).join('')}
@@ -281,13 +304,18 @@ export function renderDashboard(navigate, leads = [], session = null) {
           <!-- Priority Leads -->
           <div class="lg:col-span-5">
             <div class="flex items-center justify-between mb-6">
-              <h2 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-forest">Priority Leads</h2>
-              <span class="px-3 py-1 bg-canopy/10 text-canopy text-[10px] font-bold uppercase tracking-wider rounded-full">${highPriority.length} high priority</span>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
+                  <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">priority_high</span>
+                </div>
+                <h2 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-white drop-shadow-sm">Priority Leads</h2>
+              </div>
+              <span class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full" style="background: rgba(138,74,58,0.15); color: #d4785a;">${highPriority.length} high</span>
             </div>
 
             <div class="space-y-4 mb-6">
               ${priorityLeads.map(lead => `
-              <div class="card rounded-2xl p-5 cursor-pointer border-l-4 ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'border-l-error' : 'border-l-canopy'} hover:cursor-pointer" onclick="window.app.navigate('#lead/${lead.id}')">
+              <div class="card rounded-2xl p-5 cursor-pointer border-l-4 ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'border-l-error' : 'border-l-canopy'}" onclick="window.app.navigate('#lead/${lead.id}')">
                 <div class="flex items-start justify-between mb-2">
                   <h4 class="font-semibold text-forest text-base leading-tight">${lead.org_name}</h4>
                   <span class="material-symbols-outlined text-sm ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'text-error' : 'text-canopy'}" style="font-variation-settings:'FILL' 1;">priority_high</span>
@@ -295,14 +323,14 @@ export function renderDashboard(navigate, leads = [], session = null) {
                 <p class="text-sm text-ink-soft mb-3 line-clamp-2 leading-relaxed">${lead.action || lead.comments || 'No action noted'}</p>
                 <div class="flex items-center gap-2">
                   <span class="px-2 py-0.5 bg-meadow text-forest text-[10px] font-bold uppercase tracking-wider rounded-full">${lead.stage}</span>
-                  <span class="px-2 py-0.5 ${lead.category === 'Philanthropy' ? 'bg-meadow text-forest' : 'bg-surface-mid text-ink-soft'} text-[10px] font-bold rounded-full">${lead.category}</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" style="${lead.category === 'Philanthropy' ? 'background:rgba(90,138,74,0.12);color:#5a8a4a;' : 'background:rgba(42,106,90,0.12);color:#2a6a5a;'}">${lead.category}</span>
                 </div>
               </div>
               `).join('')}
             </div>
 
             <!-- Category split card -->
-            <div class="card rounded-2xl p-6 bg-forest text-white border-0">
+            <div class="card-deep rounded-2xl p-6">
               <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/50 mb-4">Category Split</p>
               <div class="flex items-end gap-6 mb-4">
                 <div>
@@ -315,7 +343,6 @@ export function renderDashboard(navigate, leads = [], session = null) {
                   <p class="text-xs text-white/60 mt-1">Investors</p>
                 </div>
               </div>
-              <!-- Split bar -->
               <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden flex">
                 <div class="bg-canopy h-full bar-fill rounded-full" style="width:${philPct}%"></div>
               </div>
@@ -326,10 +353,10 @@ export function renderDashboard(navigate, leads = [], session = null) {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
-      <!-- ── Bottom nav (mobile) ───────────────────────── -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+      <!-- ── Bottom nav (mobile) ── -->
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
         <a class="flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-forest text-white" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">dashboard</span>
           <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>

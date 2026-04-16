@@ -68,17 +68,17 @@ function renderColumn(col, leads) {
 
 export function renderKanban(navigate, leads = []) {
   return `
-    <div class="min-h-screen bg-white pb-24 md:pb-0">
+    <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('kanban')}
 
       <main>
         <!-- Hero -->
         <section class="max-w-7xl mx-auto px-6 pt-10 pb-6 flex flex-col md:flex-row justify-between items-end gap-6">
           <div>
-            <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-ink-ghost mb-3">Outreach Lifecycle</p>
-            <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-forest leading-tight mb-3">Leads Pipeline</h1>
-            <p class="text-ink-soft text-base max-w-lg leading-relaxed">
-              Track your <strong class="text-ink-mid font-semibold">${leads.length} lead${leads.length !== 1 ? 's' : ''}</strong> across every stage from first contact to active engagement.
+            <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/50 mb-3">Outreach Lifecycle</p>
+            <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-white drop-shadow-sm leading-tight mb-3">Leads Pipeline</h1>
+            <p class="text-white/70 text-base max-w-lg leading-relaxed">
+              Track your <strong class="text-white font-semibold">${leads.length} lead${leads.length !== 1 ? 's' : ''}</strong> across every stage from first contact to active engagement.
             </p>
           </div>
           <div class="flex gap-3 shrink-0">
@@ -115,7 +115,7 @@ export function renderKanban(navigate, leads = []) {
       </main>
 
       <!-- Bottom nav (mobile) -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
         <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>

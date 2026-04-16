@@ -1,16 +1,22 @@
 import { navHTML } from './dashboard.js';
 
 const PRIORITY_COLOUR = {
-  High:     { dot: '#c0392b', badge: 'bg-error/10 text-error',     border: 'border-l-error' },
-  Critical: { dot: '#c0392b', badge: 'bg-error/10 text-error',     border: 'border-l-error' },
-  Medium:   { dot: '#00c566', badge: 'bg-canopy/10 text-canopy',   border: 'border-l-canopy' },
-  Low:      { dot: '#d0ead9', badge: 'bg-meadow text-forest',      border: 'border-l-meadow-mid' },
+  High:     { dot: '#8a3a3a', badge: 'bg-error/10 text-error',     border: 'border-l-error' },
+  Critical: { dot: '#8a3a3a', badge: 'bg-error/10 text-error',     border: 'border-l-error' },
+  Medium:   { dot: '#3d8b63', badge: 'bg-canopy-light text-canopy',border: 'border-l-canopy' },
+  Low:      { dot: '#c8d8c4', badge: 'bg-meadow text-forest',      border: 'border-l-meadow-mid' },
 };
 const pc = (p) => PRIORITY_COLOUR[p] || PRIORITY_COLOUR['Medium'];
 
+// Category colour for calendar dots
+const catColour = (lead) => {
+  const cat = (lead?.category || '').toLowerCase();
+  if (cat.includes('philanthropy') && cat.includes('investor')) return { bg: 'bg-copper', ring: 'ring-canopy' };   // both
+  if (cat.includes('philanthropy')) return { bg: 'bg-copper' };
+  return { bg: 'bg-canopy' };
+};
+
 export function renderCalendar(navigate, followUps = [], leads = []) {
-  // followUps: interaction records with follow_up_date set
-  // leads: all leads (for priority lookup by lead_id)
   const leadMap = Object.fromEntries(leads.map(l => [l.id, l]));
 
   const today = new Date();
@@ -19,7 +25,7 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
   const parse = (d) => { const dt = new Date(d + 'T00:00:00'); dt.setHours(0,0,0,0); return dt; };
   const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' });
 
-  // Enrich each follow-up with lead info + parsed date
+  // Enrich
   const items = followUps
     .filter(f => f.follow_up_date)
     .map(f => {
@@ -30,23 +36,111 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
     })
     .sort((a, b) => a.dt - b.dt);
 
-  // Bucket
+  // Buckets for task list
   const overdue   = items.filter(i => i.diffDays < 0 && !i.completed);
   const todayItems = items.filter(i => i.diffDays === 0 && !i.completed);
   const thisWeek  = items.filter(i => i.diffDays > 0 && i.diffDays <= 7 && !i.completed);
   const upcoming  = items.filter(i => i.diffDays > 7 && !i.completed);
   const done      = items.filter(i => i.completed);
 
+  const totalPending = overdue.length + todayItems.length + thisWeek.length + upcoming.length;
+
+  // ── Calendar grid data ──────────────────────────────
+  // Build a lookup: "YYYY-MM-DD" → array of items
+  const dateMap = {};
+  items.forEach(item => {
+    const key = item.follow_up_date;
+    if (!dateMap[key]) dateMap[key] = [];
+    dateMap[key].push(item);
+  });
+
+  // We'll render the current month by default, with JS to navigate
+  const calMonth = today.getMonth();
+  const calYear = today.getFullYear();
+
+  // Generate calendar HTML for a given month/year
+  function calendarGrid(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDow = firstDay.getDay(); // 0=Sun
+    const daysInMonth = lastDay.getDate();
+    const monthName = firstDay.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+
+    let cells = '';
+
+    // Empty cells before first day
+    for (let i = 0; i < startDow; i++) {
+      cells += `<div class="h-20 md:h-24"></div>`;
+    }
+
+    // Day cells
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayItems = dateMap[dateStr] || [];
+      const isToday = (d === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+      const hasOverdue = dayItems.some(i => !i.completed && i.diffDays < 0);
+      const hasPending = dayItems.some(i => !i.completed);
+
+      const dayNumClass = isToday
+        ? 'w-7 h-7 rounded-full bg-forest text-white flex items-center justify-center text-xs font-bold'
+        : 'text-xs font-semibold text-ink-mid';
+
+      const cellBorder = isToday ? 'border-forest/30 bg-canopy-light/30' : hasOverdue ? 'border-error/20 bg-error-bg/30' : 'border-transparent';
+
+      // Show up to 3 dots for tasks on this day
+      const dots = dayItems.slice(0, 3).map(item => {
+        const cc = catColour(item.lead);
+        const completed = item.completed;
+        return `<div class="w-2 h-2 rounded-full ${completed ? 'bg-surface-high' : cc.bg} ${cc.ring ? 'ring-1 ' + cc.ring : ''}" title="${item.lead?.org_name || ''}: ${item.follow_up_action || item.summary || ''}"></div>`;
+      }).join('');
+
+      const overflow = dayItems.length > 3 ? `<span class="text-[9px] text-ink-ghost font-bold">+${dayItems.length - 3}</span>` : '';
+
+      // Clickable — show first task's lead
+      const onclick = dayItems.length > 0 ? `onclick="document.getElementById('cal-day-${dateStr}')?.scrollIntoView({behavior:'smooth', block:'center'})"` : '';
+
+      cells += `
+        <div class="h-20 md:h-24 p-1.5 border ${cellBorder} rounded-lg ${dayItems.length > 0 ? 'cursor-pointer hover:bg-surface-low' : ''} transition-colors" ${onclick}>
+          <div class="${dayNumClass} mb-1">${isToday ? `<span>${d}</span>` : d}</div>
+          <div class="flex items-center gap-1 flex-wrap">${dots}${overflow}</div>
+        </div>`;
+    }
+
+    return { monthName, cells };
+  }
+
+  // Pre-render 3 months: prev, current, next
+  const months = [];
+  for (let offset = -1; offset <= 2; offset++) {
+    const m = new Date(calYear, calMonth + offset, 1);
+    months.push({ year: m.getFullYear(), month: m.getMonth(), id: `cal-${m.getFullYear()}-${m.getMonth()}` });
+  }
+
+  const calGrids = months.map(({ year, month, id }) => {
+    const { monthName, cells } = calendarGrid(year, month);
+    const isCurrent = (year === calYear && month === calMonth);
+    return `
+    <div id="${id}" class="${isCurrent ? '' : 'hidden'}" data-cal-grid data-year="${year}" data-month="${month}">
+      <div class="grid grid-cols-7 gap-px mb-2">
+        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost text-center py-2">${d}</div>`).join('')}
+      </div>
+      <div class="grid grid-cols-7 gap-px">
+        ${cells}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Task card renderer
   const card = (item) => {
     const p = item.lead?.priority || 'Medium';
     const pNorm = p === 'Critical' ? 'High' : p;
     const colours = pc(p);
+    const dateStr = item.follow_up_date;
     return `
-    <div class="card rounded-xl p-4 border-l-4 ${colours.border} flex items-start gap-4 group">
+    <div id="cal-day-${dateStr}" class="card rounded-xl p-4 border-l-4 ${colours.border} flex items-start gap-4 group">
       <div class="shrink-0 mt-0.5">
         <div class="w-5 h-5 rounded-full border-2 border-border cursor-pointer flex items-center justify-center hover:border-forest transition-colors ${item.completed ? 'bg-forest border-forest' : ''}"
           onclick="(async function(){
-            const el = this;
             const { error } = await window.app.completeFollowUp(${item.id}, ${!item.completed});
             if (!error) window.app.navigate('#calendar');
           }).call(this)">
@@ -88,61 +182,100 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
     </div>`;
   };
 
-  const totalPending = overdue.length + todayItems.length + thisWeek.length + upcoming.length;
-
   return `
-    <div class="min-h-screen bg-white pb-24 md:pb-0">
+    <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('calendar')}
 
-      <main class="max-w-3xl mx-auto px-6 pt-10">
+      <main class="max-w-7xl mx-auto px-6 pt-10">
 
         <!-- Hero -->
         <section class="mb-10 flex items-end justify-between gap-6">
           <div>
-            <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-ink-ghost mb-3">Action Centre</p>
-            <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-forest leading-tight mb-2">Follow-ups</h1>
-            <p class="text-ink-soft text-base">
+            <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/50 mb-3">Action Centre</p>
+            <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-white drop-shadow-sm leading-tight mb-2">Follow-ups</h1>
+            <p class="text-white/70 text-base">
               ${totalPending > 0
-                ? `<strong class="text-ink-mid">${totalPending}</strong> task${totalPending !== 1 ? 's' : ''} pending${overdue.length > 0 ? ` · <span class="text-error font-semibold">${overdue.length} overdue</span>` : ''}`
-                : 'All clear — no pending follow-ups 🌿'}
+                ? `<strong class="text-white">${totalPending}</strong> task${totalPending !== 1 ? 's' : ''} pending${overdue.length > 0 ? ` · <span class="text-error font-semibold">${overdue.length} overdue</span>` : ''}`
+                : 'All clear — no pending follow-ups'}
             </p>
           </div>
           <div class="text-right shrink-0">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">${today.toLocaleDateString('en-AU', { weekday:'long' })}</p>
-            <p class="text-2xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${today.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' })}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-white/50">${today.toLocaleDateString('en-AU', { weekday:'long' })}</p>
+            <p class="text-2xl font-bold text-white drop-shadow-sm" style="font-family:'Fraunces',Georgia,serif;">${today.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' })}</p>
           </div>
         </section>
 
-        <!-- Task buckets -->
-        ${overdue.length > 0 ? bucket('Overdue', 'warning', overdue, '', 'text-error') : ''}
-        ${bucket('Today', 'today', todayItems, 'Nothing due today ✓', 'text-canopy')}
-        ${bucket('This Week', 'date_range', thisWeek, 'Nothing else this week')}
-        ${upcoming.length > 0 ? bucket('Upcoming', 'event', upcoming, '') : ''}
-        ${done.length > 0 ? `
-        <details class="mt-8">
-          <summary class="flex items-center gap-2 cursor-pointer text-ink-ghost hover:text-forest transition-colors mb-4">
-            <span class="material-symbols-outlined text-base">check_circle</span>
-            <span class="text-sm font-bold uppercase tracking-wider">Completed (${done.length})</span>
-          </summary>
-          <div class="space-y-3 opacity-60">
-            ${done.map(card).join('')}
-          </div>
-        </details>` : ''}
+        <!-- ═══ Two-column layout: Calendar + Task List ═══ -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        ${totalPending === 0 && done.length === 0 ? `
-        <div class="text-center py-20">
-          <div class="w-16 h-16 rounded-2xl bg-meadow flex items-center justify-center mx-auto mb-5">
-            <span class="material-symbols-outlined text-forest text-3xl" style="font-variation-settings:'FILL' 1;">sentiment_satisfied</span>
+          <!-- Calendar panel -->
+          <div class="lg:col-span-7">
+            <div class="card rounded-2xl p-6 mb-8">
+              <!-- Month navigation -->
+              <div class="flex items-center justify-between mb-6">
+                <button id="cal-prev" class="w-9 h-9 rounded-lg bg-surface-low flex items-center justify-center text-ink-soft hover:text-forest hover:bg-surface-mid transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-lg">chevron_left</span>
+                </button>
+                <h3 id="cal-month-title" style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-forest">${months.find(m => m.year === calYear && m.month === calMonth) ? new Date(calYear, calMonth).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' }) : ''}</h3>
+                <button id="cal-next" class="w-9 h-9 rounded-lg bg-surface-low flex items-center justify-center text-ink-soft hover:text-forest hover:bg-surface-mid transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-lg">chevron_right</span>
+                </button>
+              </div>
+
+              <!-- Calendar grids (toggled by JS) -->
+              ${calGrids}
+
+              <!-- Legend -->
+              <div class="flex items-center gap-6 mt-5 pt-4 border-t border-border-soft">
+                <div class="flex items-center gap-2">
+                  <div class="w-2.5 h-2.5 rounded-full bg-copper"></div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Philanthropy</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-2.5 h-2.5 rounded-full bg-canopy"></div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Investors</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full bg-forest text-white flex items-center justify-center text-[9px] font-bold">16</div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Today</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-forest mb-2">You're all caught up</h3>
-          <p class="text-ink-soft text-base mb-6">Log interactions and set follow-up dates to see tasks here.</p>
-          <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm cursor-pointer" onclick="window.app.navigate('#leads')">View All Leads</button>
-        </div>` : ''}
+
+          <!-- Task list panel -->
+          <div class="lg:col-span-5">
+            ${overdue.length > 0 ? bucket('Overdue', 'warning', overdue, '', 'text-error') : ''}
+            ${bucket('Today', 'today', todayItems, 'Nothing due today', 'text-canopy')}
+            ${bucket('This Week', 'date_range', thisWeek, 'Nothing else this week')}
+            ${upcoming.length > 0 ? bucket('Upcoming', 'event', upcoming, '') : ''}
+            ${done.length > 0 ? `
+            <details class="mt-8">
+              <summary class="flex items-center gap-2 cursor-pointer text-ink-ghost hover:text-forest transition-colors mb-4">
+                <span class="material-symbols-outlined text-base">check_circle</span>
+                <span class="text-sm font-bold uppercase tracking-wider">Completed (${done.length})</span>
+              </summary>
+              <div class="space-y-3 opacity-60">
+                ${done.map(card).join('')}
+              </div>
+            </details>` : ''}
+
+            ${totalPending === 0 && done.length === 0 ? `
+            <div class="text-center py-16">
+              <div class="w-14 h-14 rounded-2xl bg-canopy-light flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-canopy text-2xl" style="font-variation-settings:'FILL' 1;">sentiment_satisfied</span>
+              </div>
+              <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-forest mb-2">You're all caught up</h3>
+              <p class="text-ink-soft text-sm mb-5">Log interactions and set follow-up dates to see tasks here.</p>
+              <button class="btn-primary px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer" onclick="window.app.navigate('#leads')">View All Leads</button>
+            </div>` : ''}
+          </div>
+        </div>
 
       </main>
 
       <!-- Bottom nav (mobile) -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
         <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
@@ -165,5 +298,36 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
         </a>
       </nav>
     </div>
+
+    <script>
+    // Calendar month navigation
+    (function(){
+      const grids = document.querySelectorAll('[data-cal-grid]');
+      const title = document.getElementById('cal-month-title');
+      const prevBtn = document.getElementById('cal-prev');
+      const nextBtn = document.getElementById('cal-next');
+      if (!grids.length || !title || !prevBtn || !nextBtn) return;
+
+      let currentIdx = Array.from(grids).findIndex(g => !g.classList.contains('hidden'));
+      if (currentIdx === -1) currentIdx = 0;
+
+      function show(idx) {
+        grids.forEach(g => g.classList.add('hidden'));
+        if (grids[idx]) {
+          grids[idx].classList.remove('hidden');
+          const y = grids[idx].dataset.year;
+          const m = grids[idx].dataset.month;
+          title.textContent = new Date(y, m).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+        }
+        currentIdx = idx;
+        prevBtn.style.visibility = idx <= 0 ? 'hidden' : 'visible';
+        nextBtn.style.visibility = idx >= grids.length - 1 ? 'hidden' : 'visible';
+      }
+
+      prevBtn.addEventListener('click', () => { if (currentIdx > 0) show(currentIdx - 1); });
+      nextBtn.addEventListener('click', () => { if (currentIdx < grids.length - 1) show(currentIdx + 1); });
+      show(currentIdx);
+    })();
+    </script>
   `;
 }

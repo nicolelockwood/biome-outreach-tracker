@@ -9,6 +9,7 @@ import { renderCalendar } from './screens/calendar.js';
 import { renderStrategy } from './screens/strategy.js';
 import { renderArchive } from './screens/archive.js';
 import { renderInteractionModal } from './screens/interactionModal.js';
+import { renderOutcomeModal } from './screens/outcomeModal.js';
 import { renderImportLeads, renderExportData, renderNotifications, renderTeamManagement } from './screens/placeholders.js';
 import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, getAllInteractions, getAllInteractionsAll, updateInteraction } from './supabase.js';
 
@@ -132,6 +133,27 @@ class App {
     this.render();
   }
 
+  showOutcomeModal(leadId, currentStage) {
+    this.currentLeadId = leadId;
+    this.showingOutcomeModal = true;
+    this.outcomeStage = currentStage;
+    this.renderOutcome();
+  }
+
+  closeOutcomeModal() {
+    this.showingOutcomeModal = false;
+    this.render();
+  }
+
+  renderOutcome() {
+    const existing = document.getElementById('outcome-modal-wrapper');
+    if (existing) existing.remove();
+    const container = document.createElement('div');
+    container.id = 'outcome-modal-wrapper';
+    container.innerHTML = renderOutcomeModal(this.currentLeadId, this.outcomeStage);
+    this.appElement.appendChild(container);
+  }
+
   renderModal() {
     const existingModal = document.getElementById('interaction-modal-wrapper');
     if (existingModal) existingModal.remove();
@@ -147,13 +169,13 @@ class App {
 
   showLoading() {
     this.appElement.innerHTML = `
-      <div class="min-h-screen flex items-center justify-center bg-[#f4f4ef]">
-        <div class="flex flex-col items-center gap-6">
+      <div class="min-h-screen flex items-center justify-center">
+        <div class="card rounded-3xl px-12 py-10 flex flex-col items-center gap-6">
           <svg width="52" height="40" viewBox="0 0 64 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="64" height="48" rx="6" fill="#163428"/>
-            <text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="'Manrope',sans-serif" font-weight="800" font-size="11" fill="#4ade80" letter-spacing="2">EARTHLY</text>
+            <rect width="64" height="48" rx="6" fill="#14342a"/>
+            <text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="'Manrope',sans-serif" font-weight="800" font-size="11" fill="#3d8b63" letter-spacing="2">EARTHLY</text>
           </svg>
-          <div class="w-6 h-6 border-2 border-[#163428]/20 border-t-[#163428] rounded-full animate-spin"></div>
+          <div class="w-6 h-6 border-2 border-forest/20 border-t-forest rounded-full animate-spin"></div>
         </div>
       </div>
     `;
@@ -244,9 +266,12 @@ class App {
 
     this.appElement.innerHTML = content;
 
-    // Re-attach modal if needed
+    // Re-attach modals if needed
     if (this.showingModal) {
       this.renderModal();
+    }
+    if (this.showingOutcomeModal) {
+      this.renderOutcome();
     }
   }
 }

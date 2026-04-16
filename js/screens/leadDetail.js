@@ -2,7 +2,7 @@ import { navHTML } from './dashboard.js';
 
 export function renderLeadDetail(lead, interactions = [], navigate, showInteractionModal) {
   if (!lead) return `
-    <div class="min-h-screen flex items-center justify-center bg-white">
+    <div class="min-h-screen flex items-center justify-center">
       <div class="text-center">
         <p class="text-ink-soft text-lg mb-4">Lead not found.</p>
         <button class="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer" onclick="window.app.navigate('#leads')">Back to Leads</button>
@@ -27,17 +27,17 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
 
   // Card background + text — changes with pipeline stage
   const cardStyle = (stage) => {
-    if (stage === 'Engaged')          return { bg: '#00c566', text: '#fff', subtext: 'rgba(255,255,255,0.65)', icon: 'rgba(255,255,255,0.15)' };
-    if (stage === 'Meeting Set')      return { bg: '#92400e', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
-    if (stage === 'Proposal Sent')    return { bg: '#0d3320', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
-    if (stage === 'Awaiting Response')return { bg: '#b45309', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
-    if (stage === 'Parked')           return { bg: '#374151', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
-    return                                   { bg: '#1a3d2b', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
+    if (stage === 'Engaged')          return { bg: '#2d6b4a', text: '#fff', subtext: 'rgba(255,255,255,0.65)', icon: 'rgba(255,255,255,0.15)' };
+    if (stage === 'Meeting Set')      return { bg: '#8a7a3a', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
+    if (stage === 'Proposal Sent')    return { bg: '#1e4d3a', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
+    if (stage === 'Awaiting Response')return { bg: '#8a7a3a', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
+    if (stage === 'Parked')           return { bg: '#2d3d34', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
+    return                                   { bg: '#14342a', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
   };
   const cs = cardStyle(lead.stage);
 
   return `
-    <div class="min-h-screen bg-white pb-24 md:pb-0">
+    <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('leads')}
 
       <main class="max-w-7xl mx-auto px-6 py-10">
@@ -45,19 +45,19 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
         <!-- Breadcrumb -->
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <nav class="flex items-center gap-1.5 text-ink-ghost text-xs font-bold uppercase tracking-wider mb-3">
-              <a class="hover:text-forest cursor-pointer transition-colors" onclick="window.app.navigate('#leads')">Leads</a>
+            <nav class="flex items-center gap-1.5 text-white/50 text-xs font-bold uppercase tracking-wider mb-3">
+              <a class="hover:text-white cursor-pointer transition-colors" onclick="window.app.navigate('#leads')">Leads</a>
               <span class="material-symbols-outlined text-sm">chevron_right</span>
-              <span class="text-forest">Lead Detail</span>
+              <span class="text-white/70">Lead Detail</span>
             </nav>
             <div class="flex flex-wrap items-center gap-3 mb-2">
-              <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-4xl font-semibold text-forest leading-tight">${lead.contact_name || lead.org_name}</h1>
+              <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-4xl font-semibold text-white drop-shadow-sm leading-tight">${lead.contact_name || lead.org_name}</h1>
               <span class="px-3 py-1 rounded-full ${stageColour(lead.stage)} text-[10px] font-bold uppercase tracking-wider">${lead.stage}</span>
             </div>
-            <p class="text-ink-soft text-base">${lead.contact_title || 'Contact'} · ${lead.org_name}</p>
+            <p class="text-white/70 text-base">${lead.contact_title || 'Contact'} · ${lead.org_name}</p>
           </div>
           <div class="flex items-center gap-3 shrink-0 self-start">
-            <button class="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm border-2 border-forest text-forest hover:bg-forest hover:text-white transition-all duration-200 cursor-pointer" onclick="window.app.navigate('#edit-lead/${lead.id}')">
+            <button class="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-200 cursor-pointer backdrop-blur-sm" onclick="window.app.navigate('#edit-lead/${lead.id}')">
               <span class="material-symbols-outlined text-base">edit</span>
               Edit Lead
             </button>
@@ -194,8 +194,10 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
                 <p class="text-xs font-bold text-ink-ghost uppercase tracking-wider mb-1">${lead.next_follow_up || 'To be scheduled'}</p>
                 <p class="text-sm font-semibold text-ink-mid">Review status &amp; finalise next steps</p>
               </div>
-              <button class="w-full py-2.5 btn-primary rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer" onclick="window.app.showInteractionModal(${lead.id})">
-                <span class="material-symbols-outlined text-base">check_circle</span>
+              <button class="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer text-white transition-all"
+                style="background: linear-gradient(135deg, #3d8b63, #14342a); box-shadow: 0 2px 12px rgba(61,139,99,0.2);"
+                onclick="window.app.showOutcomeModal(${lead.id}, '${(lead.stage || '').replace(/'/g, "\\'")}')">
+                <span class="material-symbols-outlined text-base">verified</span>
                 Log Outcome
               </button>
             </div>
@@ -205,7 +207,7 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
       </main>
 
       <!-- Bottom nav (mobile) -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
         <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>

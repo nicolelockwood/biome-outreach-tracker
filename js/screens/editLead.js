@@ -2,7 +2,7 @@ import { navHTML } from './dashboard.js';
 
 export function renderEditLead(lead, navigate) {
   if (!lead) return `
-    <div class="min-h-screen flex items-center justify-center bg-white">
+    <div class="min-h-screen flex items-center justify-center">
       <div class="text-center">
         <p class="text-ink-soft text-lg mb-4">Lead not found.</p>
         <button class="btn-primary px-6 py-3 rounded-xl font-semibold cursor-pointer" onclick="window.app.navigate('#leads')">Back to Leads</button>
@@ -42,21 +42,21 @@ export function renderEditLead(lead, navigate) {
     : 'relative flex items-center gap-4 p-5 rounded-xl cursor-pointer bg-surface-low border-2 border-transparent hover:bg-meadow transition-all';
 
   return `
-    <div class="min-h-screen bg-white text-ink pb-24 md:pb-0">
+    <div class="min-h-screen text-ink pb-24 md:pb-0">
       ${navHTML('leads')}
 
       <main class="max-w-4xl mx-auto px-6 pt-10">
         <!-- Breadcrumb + Hero -->
         <section class="mb-10">
-          <nav class="flex items-center gap-1.5 text-ink-ghost text-xs font-bold uppercase tracking-wider mb-4">
-            <a class="hover:text-forest cursor-pointer transition-colors" onclick="window.app.navigate('#leads')">Leads</a>
+          <nav class="flex items-center gap-1.5 text-white/50 text-xs font-bold uppercase tracking-wider mb-4">
+            <a class="hover:text-white cursor-pointer transition-colors" onclick="window.app.navigate('#leads')">Leads</a>
             <span class="material-symbols-outlined text-sm">chevron_right</span>
-            <a class="hover:text-forest cursor-pointer transition-colors" onclick="window.app.navigate('#lead/${lead.id}')">Lead Detail</a>
+            <a class="hover:text-white cursor-pointer transition-colors" onclick="window.app.navigate('#lead/${lead.id}')">Lead Detail</a>
             <span class="material-symbols-outlined text-sm">chevron_right</span>
-            <span class="text-forest">Edit</span>
+            <span class="text-white/70">Edit</span>
           </nav>
-          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-forest leading-tight mb-2">Edit Lead</h1>
-          <p class="text-ink-soft text-base">${lead.org_name}</p>
+          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-white drop-shadow-sm leading-tight mb-2">Edit Lead</h1>
+          <p class="text-white/70 text-base">${lead.org_name}</p>
         </section>
 
         <!-- Form -->
@@ -321,7 +321,7 @@ export function renderEditLead(lead, navigate) {
       </main>
 
       <!-- Bottom nav (mobile) -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
         <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>

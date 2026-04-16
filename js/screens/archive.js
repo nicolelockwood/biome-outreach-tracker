@@ -121,16 +121,16 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
   };
 
   return `
-    <div class="min-h-screen bg-white pb-24 md:pb-0">
+    <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('archive')}
 
       <main class="max-w-4xl mx-auto px-6 pt-10 pb-16">
 
         <!-- Hero -->
         <section class="mb-10">
-          <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-ink-ghost mb-3">Secured Funding</p>
-          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-forest leading-tight mb-3">Funding Archive</h1>
-          <p class="text-ink-soft text-base max-w-xl leading-relaxed">
+          <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/50 mb-3">Secured Funding</p>
+          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-white drop-shadow-sm leading-tight mb-3">Funding Archive</h1>
+          <p class="text-white/70 text-base max-w-xl leading-relaxed">
             A permanent record of every commitment landed — full relationship trail included.
           </p>
         </section>
@@ -170,7 +170,7 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
       </main>
 
       <!-- Bottom nav (mobile) -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
         <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>

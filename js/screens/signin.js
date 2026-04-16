@@ -16,8 +16,8 @@ export function renderSignIn(navigate) {
           <div class="flex items-center gap-3 mb-12">
             <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C8 2 4 5.5 4 10c0 2.5 1.2 4.8 3 6.2V20h10v-3.8c1.8-1.4 3-3.7 3-6.2 0-4.5-4-8-8-8z" fill="#00c566" opacity="0.9"/>
-                <path d="M9 20v2h6v-2H9z" fill="#00c566" opacity="0.6"/>
+                <path d="M12 2C8 2 4 5.5 4 10c0 2.5 1.2 4.8 3 6.2V20h10v-3.8c1.8-1.4 3-3.7 3-6.2 0-4.5-4-8-8-8z" fill="#3d8b63" opacity="0.9"/>
+                <path d="M9 20v2h6v-2H9z" fill="#3d8b63" opacity="0.6"/>
               </svg>
             </div>
             <span style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-white tracking-tight">Biome</span>
@@ -53,12 +53,12 @@ export function renderSignIn(navigate) {
       </div>
 
       <!-- Sign-in panel -->
-      <main class="w-full lg:w-5/12 flex flex-col justify-center px-8 sm:px-16 lg:px-20 bg-white relative overflow-hidden">
+      <main class="w-full lg:w-5/12 flex flex-col justify-center px-8 sm:px-16 lg:px-20 relative overflow-hidden" style="background: rgba(255,255,255,0.88); backdrop-filter: blur(24px) saturate(1.3);">
 
         <!-- Mobile logo -->
         <div class="lg:hidden absolute top-10 left-8 flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-forest flex items-center justify-center">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 2C8 2 4 5.5 4 10c0 2.5 1.2 4.8 3 6.2V20h10v-3.8c1.8-1.4 3-3.7 3-6.2 0-4.5-4-8-8-8z" fill="#00c566"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 2C8 2 4 5.5 4 10c0 2.5 1.2 4.8 3 6.2V20h10v-3.8c1.8-1.4 3-3.7 3-6.2 0-4.5-4-8-8-8z" fill="#3d8b63"/></svg>
           </div>
           <span style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-forest">Biome</span>
         </div>

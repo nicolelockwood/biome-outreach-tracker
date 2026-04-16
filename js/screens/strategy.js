@@ -4,7 +4,7 @@ const STAGES = [
   {
     name: 'New',
     icon: 'search',
-    colour: { bg: 'bg-surface-low', border: 'border-border-soft', badge: 'bg-surface-mid text-ink-soft', num: 'text-ink-ghost' },
+    colour: { bg: 'bg-surface-mid', border: 'border-border', badge: 'bg-surface-high text-ink-soft', num: 'text-ink-ghost', headerBg: 'rgba(255,255,255,0.70)' },
     goal: 'Qualify the lead and determine if there is a genuine mission or returns alignment before investing relationship capital.',
     actions: [
       'Research the organisation — mission, portfolio, past giving or investments',
@@ -28,7 +28,7 @@ Nicole`,
   {
     name: 'Contacted',
     icon: 'mail',
-    colour: { bg: 'bg-meadow/30', border: 'border-meadow-mid', badge: 'bg-meadow text-forest', num: 'text-forest/40' },
+    colour: { bg: 'bg-canopy-light', border: 'border-canopy/20', badge: 'bg-canopy-light text-canopy', num: 'text-canopy/40', headerBg: 'rgba(61,139,99,0.10)' },
     goal: 'Open a two-way conversation. Your goal at this stage is a reply — not a yes.',
     actions: [
       'Send initial outreach (email, LinkedIn, warm intro)',
@@ -53,7 +53,7 @@ Nicole`,
   {
     name: 'Engaged',
     icon: 'forum',
-    colour: { bg: 'bg-canopy/10', border: 'border-canopy/30', badge: 'bg-canopy/15 text-canopy', num: 'text-canopy/30' },
+    colour: { bg: 'bg-forest/5', border: 'border-forest/20', badge: 'bg-forest/10 text-forest', num: 'text-forest/30', headerBg: 'rgba(20,52,42,0.08)' },
     goal: 'Deepen the relationship. Understand what they care about, what their process looks like, and where Earthly fits.',
     actions: [
       'Schedule a proper intro or scoping call',
@@ -82,7 +82,7 @@ Nicole`,
   {
     name: 'Meeting Set',
     icon: 'calendar_month',
-    colour: { bg: 'bg-amber-50', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-700', num: 'text-amber-200' },
+    colour: { bg: 'bg-amber-light', border: 'border-amber/20', badge: 'bg-amber-light text-amber', num: 'text-amber/30', headerBg: 'rgba(138,122,58,0.08)' },
     goal: 'Make the meeting count. Come prepared to listen as much as to present.',
     actions: [
       'Confirm the meeting 24–48 hours beforehand',
@@ -107,7 +107,7 @@ Nicole`,
   {
     name: 'Proposal Sent',
     icon: 'description',
-    colour: { bg: 'bg-[#0d3320]/5', border: 'border-[#0d3320]/10', badge: 'bg-[#0d3320]/10 text-[#0d3320]', num: 'text-[#0d3320]/20' },
+    colour: { bg: 'bg-copper-light', border: 'border-copper/20', badge: 'bg-copper-light text-copper', num: 'text-copper/30', headerBg: 'rgba(138,122,58,0.06)' },
     goal: 'Hold the relationship while they deliberate. Your job is to be available, not pushy.',
     actions: [
       'Send the proposal with a personalised cover note — not just an attachment',
@@ -133,7 +133,7 @@ Nicole`,
   {
     name: 'Awaiting Response',
     icon: 'hourglass_top',
-    colour: { bg: 'bg-amber-50', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-700', num: 'text-amber-200' },
+    colour: { bg: 'bg-surface-mid', border: 'border-border', badge: 'bg-amber-light text-amber', num: 'text-amber/30', headerBg: 'rgba(255,255,255,0.65)' },
     goal: 'Stay in their peripheral vision without being a nuisance. Keep the door open.',
     actions: [
       'Note the date you last heard from them',
@@ -159,7 +159,7 @@ Nicole`,
   {
     name: 'Secured',
     icon: 'verified',
-    colour: { bg: 'bg-forest', border: 'border-forest', badge: 'bg-white/20 text-white', num: 'text-white/20' },
+    colour: { bg: 'bg-forest', border: 'border-forest', badge: 'bg-white/20 text-white', num: 'text-white/20', headerBg: '#14342a' },
     goal: 'Lock in the commitment and set the relationship up for long-term trust. The deal is just the beginning.',
     actions: [
       'Confirm next steps: legal docs, transfer timeline, reporting cadence',
@@ -185,44 +185,53 @@ Nicole`,
 
 export function renderStrategy(navigate) {
   return `
-    <div class="min-h-screen bg-white pb-24 md:pb-0">
+    <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('strategy')}
 
-      <main class="max-w-5xl mx-auto px-6 pt-10 pb-16">
-
-        <!-- Hero -->
-        <section class="mb-12">
-          <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-ink-ghost mb-3">Sales Playbook</p>
-          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold text-forest leading-tight mb-4">Pipeline Strategy</h1>
-          <p class="text-ink-soft text-base max-w-2xl leading-relaxed">
+      <!-- Dark hero band — the vault feeling -->
+      <div class="bg-forest text-white py-14 mb-10">
+        <div class="max-w-5xl mx-auto px-6">
+          <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/40 mb-3">Sales Playbook</p>
+          <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold leading-tight mb-4">Pipeline Strategy</h1>
+          <p class="text-white/65 text-base max-w-2xl leading-relaxed">
             Stage-by-stage guidance for converting ecological capital conversations into committed relationships. Treat every interaction as a trust deposit, not a transaction.
           </p>
-        </section>
+        </div>
+      </div>
+
+      <main class="max-w-5xl mx-auto px-6 pb-16">
 
         <!-- Stages -->
-        <div class="space-y-6">
-          ${STAGES.map((s, i) => `
-          <details class="group card rounded-2xl overflow-hidden border ${s.colour.border}" ${i === 0 ? 'open' : ''}>
-            <summary class="flex items-center gap-5 p-6 cursor-pointer list-none ${s.colour.bg} hover:opacity-95 transition-all">
-              <div class="w-10 h-10 rounded-xl bg-white/60 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-forest text-xl" style="font-variation-settings:'FILL' 1;">${s.icon}</span>
+        <div class="space-y-5">
+          ${STAGES.map((s, i) => {
+            const isSecured = s.name === 'Secured';
+            const summaryTextClass = isSecured ? 'text-white' : 'text-forest';
+            const summarySubClass = isSecured ? 'text-white/70' : 'text-ink-mid';
+            const iconBg = isSecured ? 'bg-white/15' : 'bg-white/80';
+            const iconColor = isSecured ? 'text-white' : 'text-forest';
+            return `
+          <details class="group rounded-2xl overflow-hidden" style="border: 1.5px solid ${isSecured ? '#14342a' : 'rgba(20,52,42,0.12)'}; box-shadow: 0 2px 8px rgba(26,26,24,0.04);" ${i === 0 ? 'open' : ''}>
+            <summary class="flex items-center gap-5 p-6 cursor-pointer list-none hover:opacity-95 transition-all" style="background: ${s.colour.headerBg};">
+              <!-- Stage number — big, architectural -->
+              <div class="text-3xl font-bold ${isSecured ? 'text-white/20' : 'text-ink-ghost/30'} shrink-0 w-8 text-center" style="font-family:'Fraunces',Georgia,serif;">${i + 1}</div>
+              <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0" style="backdrop-filter: blur(4px);">
+                <span class="material-symbols-outlined ${iconColor} text-xl" style="font-variation-settings:'FILL' 1;">${s.icon}</span>
               </div>
               <div class="flex-1">
                 <div class="flex items-center gap-3">
-                  <span class="text-[10px] font-bold uppercase tracking-widest ${s.colour.num}">Stage ${i + 1}</span>
                   <span class="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${s.colour.badge}">${s.name}</span>
                 </div>
-                <p class="text-sm font-semibold text-forest mt-0.5 leading-snug">${s.goal.slice(0, 80)}…</p>
+                <p class="text-sm font-semibold ${summarySubClass} mt-1 leading-snug">${s.goal.slice(0, 90)}${s.goal.length > 90 ? '…' : ''}</p>
               </div>
-              <span class="material-symbols-outlined text-ink-ghost group-open:rotate-180 transition-transform duration-200">expand_more</span>
+              <span class="material-symbols-outlined ${isSecured ? 'text-white/40' : 'text-ink-ghost'} group-open:rotate-180 transition-transform duration-200">expand_more</span>
             </summary>
 
-            <div class="p-6 space-y-6 border-t ${s.colour.border}">
+            <div class="p-7 space-y-6" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-top: 1.5px solid ${isSecured ? 'rgba(255,255,255,0.1)' : 'rgba(20,52,42,0.08)'};">
 
-              <!-- Goal -->
-              <div class="bg-surface-low rounded-xl p-5">
+              <!-- Goal — strong card with left accent -->
+              <div class="rounded-xl p-5 border-l-4" style="background: ${s.colour.headerBg}; border-left-color: ${isSecured ? '#3d8b63' : s.name === 'Meeting Set' ? '#8a7a3a' : s.name === 'Proposal Sent' ? '#8a7a3a' : '#3d8b63'};">
                 <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-2">Stage Goal</p>
-                <p class="text-sm text-ink-mid leading-relaxed">${s.goal}</p>
+                <p class="text-sm text-ink-mid leading-relaxed font-medium">${s.goal}</p>
               </div>
 
               <!-- Actions + Watch side by side -->
@@ -239,7 +248,7 @@ export function renderStrategy(navigate) {
                 </div>
                 <div>
                   <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-3">Watch Out For</p>
-                  <div class="bg-error/5 border border-error/20 rounded-xl p-4">
+                  <div class="bg-error-bg border border-error/15 rounded-xl p-4">
                     <div class="flex items-start gap-2.5">
                       <span class="material-symbols-outlined text-error text-base shrink-0 mt-0.5">warning</span>
                       <p class="text-sm text-ink-mid leading-relaxed">${s.watch}</p>
@@ -255,17 +264,17 @@ export function renderStrategy(navigate) {
                 </div>
               </div>
 
-              <!-- Email template -->
+              <!-- Email template — darker bg for contrast -->
               <div>
                 <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-3">Template Message</p>
-                <div class="bg-surface-low rounded-xl p-5 relative">
+                <div class="rounded-xl p-5 relative" style="background: rgba(20,52,42,0.05);">
                   <pre class="text-xs text-ink-mid leading-relaxed whitespace-pre-wrap font-mono">${s.template}</pre>
                   <button class="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1.5 bg-white border border-border-soft rounded-lg text-[10px] font-bold text-ink-soft hover:text-forest hover:border-forest transition-colors cursor-pointer"
                     onclick="(function(){
                       const t = this.closest('.relative').querySelector('pre').textContent;
                       navigator.clipboard.writeText(t).then(()=>{
-                        this.innerHTML = '<span class=\'material-symbols-outlined text-xs\'>check</span> Copied';
-                        setTimeout(()=>{this.innerHTML = '<span class=\'material-symbols-outlined text-xs\'>content_copy</span> Copy'},2000);
+                        this.innerHTML = '<span class=\\'material-symbols-outlined text-xs\\'>check</span> Copied';
+                        setTimeout(()=>{this.innerHTML = '<span class=\\'material-symbols-outlined text-xs\\'>content_copy</span> Copy'},2000);
                       });
                     }).call(this)">
                     <span class="material-symbols-outlined text-xs">content_copy</span>
@@ -276,21 +285,26 @@ export function renderStrategy(navigate) {
 
             </div>
           </details>
-          `).join('')}
+          `}).join('')}
         </div>
 
-        <!-- Footer note -->
-        <div class="mt-12 p-6 bg-meadow rounded-2xl">
-          <p class="text-xs font-bold uppercase tracking-wider text-forest mb-2">Remember</p>
-          <p class="text-sm text-forest/80 leading-relaxed">
-            Every lead is a person, not a number. The most successful capital conversations happen when people feel genuinely understood and respected — not processed. Move at the pace of trust, not the pace of your timeline.
-          </p>
+        <!-- Footer note — warm band -->
+        <div class="mt-12 p-6 rounded-2xl card-warm">
+          <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-copper text-xl shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1;">eco</span>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-copper mb-2">Remember</p>
+              <p class="text-sm text-ink-mid leading-relaxed">
+                Every lead is a person, not a number. The most successful capital conversations happen when people feel genuinely understood and respected — not processed. Move at the pace of trust, not the pace of your timeline.
+              </p>
+            </div>
+          </div>
         </div>
 
       </main>
 
       <!-- Bottom nav (mobile) -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
         <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>

@@ -4,7 +4,7 @@ export function renderInteractionModal(leadId, onClose) {
       <div class="relative w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
 
         <!-- Top accent bar -->
-        <div class="h-1 w-full bg-gradient-to-r from-forest via-canopy to-forest"></div>
+        <div class="h-1 w-full bg-gradient-to-r from-forest via-canopy to-forest opacity-80"></div>
 
         <div class="p-8">
           <!-- Header -->
