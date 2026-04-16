@@ -137,6 +137,7 @@ export function renderAddLead(navigate) {
                       <option value="Proposal Sent">Proposal Sent</option>
                       <option value="Awaiting Response">Awaiting Response</option>
                       <option value="Parked">Parked</option>
+                      <option value="Secured">Secured ✓</option>
                     </select>
                     <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-ink-ghost text-base pointer-events-none">expand_more</span>
                   </div>

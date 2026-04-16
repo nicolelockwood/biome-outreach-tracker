@@ -42,6 +42,7 @@ const COL_CONFIG = [
   { key: 'engaged',  title: 'Engaged',           dotClass: 'bg-canopy',        filter: l => l.stage === 'Engaged' },
   { key: 'meeting',  title: 'Meeting / Proposal',dotClass: 'bg-warning',       filter: l => l.stage === 'Meeting Set' || l.stage === 'Proposal Sent' || l.stage === 'Awaiting Response' },
   { key: 'parked',   title: 'Parked',            dotClass: 'bg-surface-high',  filter: l => l.stage === 'Parked' || l.stage === 'Closed' },
+  { key: 'secured',  title: 'Secured ✓',         dotClass: 'bg-forest',        filter: l => l.stage === 'Secured' },
 ];
 
 function renderColumn(col, leads) {
@@ -81,11 +82,11 @@ export function renderKanban(navigate, leads = []) {
             </p>
           </div>
           <div class="flex gap-3 shrink-0">
-            <button id="kanban-filter-btn" class="flex items-center gap-2 px-5 py-3 bg-surface-low border border-border-soft text-ink-mid font-semibold rounded-xl hover:bg-surface-mid transition-colors cursor-pointer text-sm" onclick="(function(){var p=document.getElementById('kanban-filter-panel');p.classList.toggle('hidden');})()">
-              <span class="material-symbols-outlined text-base">filter_list</span>
-              Filter
+            <button class="flex items-center gap-2 px-5 py-3 bg-surface-low border border-border-soft text-ink-mid font-semibold rounded-xl hover:bg-surface-mid transition-colors cursor-pointer text-sm" onclick="window.app.navigate('#strategy')">
+              <span class="material-symbols-outlined text-base">auto_stories</span>
+              Strategy
             </button>
-            <button class="btn-primary flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm" onclick="window.app.navigate('#add-lead')">
+            <button class="btn-primary flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm cursor-pointer" onclick="window.app.navigate('#add-lead')">
               <span class="material-symbols-outlined text-base">add</span>
               New Lead
             </button>

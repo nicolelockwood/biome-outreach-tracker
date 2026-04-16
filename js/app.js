@@ -5,9 +5,11 @@ import { renderKanban } from './screens/kanban.js';
 import { renderLeadDetail } from './screens/leadDetail.js';
 import { renderAddLead } from './screens/addLead.js';
 import { renderEditLead } from './screens/editLead.js';
+import { renderCalendar } from './screens/calendar.js';
+import { renderStrategy } from './screens/strategy.js';
 import { renderInteractionModal } from './screens/interactionModal.js';
 import { renderImportLeads, renderExportData, renderNotifications, renderTeamManagement } from './screens/placeholders.js';
-import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead } from './supabase.js';
+import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, getAllInteractions, updateInteraction } from './supabase.js';
 
 class App {
   constructor() {
@@ -113,6 +115,11 @@ class App {
     return { data, error };
   }
 
+  async completeFollowUp(interactionId, completed = true) {
+    const { data, error } = await updateInteraction(interactionId, { completed });
+    return { data, error };
+  }
+
   showInteractionModal(leadId) {
     this.currentLeadId = leadId;
     this.showingModal = true;
@@ -213,6 +220,11 @@ class App {
       const editId = parseInt(editIdRaw);
       const leadToEdit = isNaN(editId) ? null : (this.leads.find(l => l.id === editId) || null);
       content = renderEditLead(leadToEdit, this.navigate.bind(this));
+    } else if (hash === 'calendar') {
+      const followUps = await getAllInteractions();
+      content = renderCalendar(this.navigate.bind(this), followUps, this.leads);
+    } else if (hash === 'strategy') {
+      content = renderStrategy(this.navigate.bind(this));
     } else if (hash === 'import') {
       content = renderImportLeads();
     } else if (hash === 'export') {

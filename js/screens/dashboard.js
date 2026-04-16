@@ -13,7 +13,6 @@ export function navHTML(active = 'dashboard') {
       <div class="flex items-center gap-3 cursor-pointer" onclick="window.app.navigate('#dashboard')">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="32" height="32" rx="8" fill="#1a3d2b"/>
-          <!-- Stylised leaf/tree mark -->
           <path d="M16 6 C10 6 7 11 8 17 C9 20 12 22 16 22 C20 22 23 20 24 17 C25 11 22 6 16 6Z" fill="#00c566" opacity="0.9"/>
           <path d="M16 14 L16 26" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M16 20 C14 18 12 18 11 19" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
@@ -27,16 +26,13 @@ export function navHTML(active = 'dashboard') {
         ${link('dashboard', 'Dashboard', 'dashboard')}
         ${link('kanban', 'Pipeline', 'kanban')}
         ${link('leads', 'Leads', 'leads')}
+        ${link('calendar', 'Follow-ups', 'calendar')}
+        ${link('strategy', 'Strategy', 'strategy')}
       </nav>
 
       <!-- Right side -->
       <div class="flex items-center gap-3">
-        <button class="hidden sm:flex items-center gap-2 text-sm font-medium text-ink-soft hover:text-forest transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-low">
-          <span class="material-symbols-outlined text-base">person</span>
-          My Leads
-          <span class="material-symbols-outlined text-base">expand_more</span>
-        </button>
-        <div class="w-9 h-9 rounded-full bg-forest flex items-center justify-center">
+        <div class="w-9 h-9 rounded-full bg-forest flex items-center justify-center cursor-pointer" onclick="window.app.signOut()" title="Sign out">
           <svg width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M16 6 C10 6 7 11 8 17 C9 20 12 22 16 22 C20 22 23 20 24 17 C25 11 22 6 16 6Z" fill="#00c566"/><path d="M16 14 L16 26" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
       </div>
@@ -44,11 +40,30 @@ export function navHTML(active = 'dashboard') {
   </header>`;
 }
 
+// Parse ticket_size strings like "$5M", "$1,000,000", "$500K" → number
+function parseTicket(str) {
+  if (!str) return 0;
+  let s = str.toString().replace(/[$,\s]/g, '');
+  if (/B$/i.test(s)) return parseFloat(s) * 1_000_000_000;
+  if (/M$/i.test(s)) return parseFloat(s) * 1_000_000;
+  if (/K$/i.test(s)) return parseFloat(s) * 1_000;
+  return parseFloat(s) || 0;
+}
+
+function fmtM(n) {
+  if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1_000) return '$' + Math.round(n / 1_000) + 'K';
+  return n > 0 ? '$' + n.toLocaleString() : '$0';
+}
+
 export function renderDashboard(navigate, leads = [], session = null) {
   const ls = leads;
   const totalLeads = ls.length;
-  const philanthropy = ls.filter(l => l.category === 'Philanthropy');
-  const investors = ls.filter(l => l.category === 'Investors');
+  // Category helpers — handle comma-separated (e.g. "Investors,Philanthropy")
+  const hasPhil = (l) => (l.category || '').split(',').map(s=>s.trim()).includes('Philanthropy');
+  const hasInv  = (l) => (l.category || '').split(',').map(s=>s.trim()).includes('Investors');
+  const philanthropy = ls.filter(hasPhil);
+  const investors = ls.filter(hasInv);
   const engaged = ls.filter(l => l.stage === 'Engaged');
   const contacted = ls.filter(l => l.stage === 'Contacted');
   const newLeads = ls.filter(l => l.stage === 'New');
@@ -64,6 +79,24 @@ export function renderDashboard(navigate, leads = [], session = null) {
 
   const philPct = totalLeads > 0 ? Math.round(philanthropy.length / totalLeads * 100) : 0;
   const invPct = 100 - philPct;
+
+  // ── Goal indicator calculations ───────────────────────────────────────
+  const PHIL_GOAL = 5_000_000;
+  const INV_GOAL  = 100_000_000;
+
+  const calcGoal = (group, goal) => {
+    const secured   = group.filter(l => l.stage === 'Secured');
+    const pipeline  = group.filter(l => l.stage !== 'Secured' && l.stage !== 'Parked' && l.stage !== 'Closed');
+    const landed    = secured.reduce((sum, l) => sum + parseTicket(l.ticket_size), 0);
+    const potential = pipeline.reduce((sum, l) => sum + parseTicket(l.ticket_size), 0);
+    const remaining = Math.max(0, goal - landed);
+    const landedPct    = Math.min(100, Math.round(landed    / goal * 100));
+    const potentialPct = Math.min(100 - landedPct, Math.round(potential / goal * 100));
+    return { landed, potential, remaining, landedPct, potentialPct };
+  };
+
+  const philGoal = calcGoal(philanthropy, PHIL_GOAL);
+  const invGoal  = calcGoal(investors,    INV_GOAL);
 
   // Stage rows data
   const stages = [
@@ -151,6 +184,49 @@ export function renderDashboard(navigate, leads = [], session = null) {
           </div>
         </section>
 
+        <!-- ── Goal Indicators ───────────────────────────────── -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-14">
+          ${[
+            { label: 'Philanthropy Goal', goal: PHIL_GOAL, g: philGoal, icon: 'volunteer_activism', colour: 'canopy' },
+            { label: 'Investment Goal',   goal: INV_GOAL,  g: invGoal,  icon: 'payments',           colour: 'forest' },
+          ].map(({ label, goal, g, icon, colour }) => `
+          <div class="card rounded-2xl p-7">
+            <div class="flex items-start justify-between mb-5">
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-1">${label}</p>
+                <p class="text-3xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(goal)}</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-meadow flex items-center justify-center">
+                <span class="material-symbols-outlined text-forest" style="font-variation-settings:'FILL' 1;">${icon}</span>
+              </div>
+            </div>
+            <!-- Progress bar -->
+            <div class="w-full h-3 rounded-full bg-surface-high overflow-hidden flex mb-4">
+              <div class="h-full rounded-l-full bg-forest transition-all duration-700" style="width:${g.landedPct}%"></div>
+              <div class="h-full bg-canopy/50 transition-all duration-700" style="width:${g.potentialPct}%"></div>
+            </div>
+            <!-- Stats row -->
+            <div class="grid grid-cols-3 gap-2">
+              <div class="bg-surface-low rounded-xl p-3 text-center">
+                <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Landed</p>
+                <p class="text-sm font-bold text-forest">${fmtM(g.landed)}</p>
+              </div>
+              <div class="bg-meadow rounded-xl p-3 text-center">
+                <p class="text-[9px] font-bold uppercase tracking-wider text-forest/60 mb-1">Potential</p>
+                <p class="text-sm font-bold text-forest">${fmtM(g.potential)}</p>
+              </div>
+              <div class="bg-surface-low rounded-xl p-3 text-center">
+                <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Still Needed</p>
+                <p class="text-sm font-bold text-ink-mid">${fmtM(g.remaining)}</p>
+              </div>
+            </div>
+            <p class="text-[10px] text-ink-ghost mt-3">
+              ${g.landedPct}% secured · ${g.potentialPct}% in pipeline · Mark a lead as <strong class="text-forest">Secured</strong> when funding lands
+            </p>
+          </div>
+          `).join('')}
+        </section>
+
         <!-- ── Main Grid ───────────────────────────────────── -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
@@ -231,23 +307,27 @@ export function renderDashboard(navigate, leads = [], session = null) {
       </main>
 
       <!-- ── Bottom nav (mobile) ───────────────────────── -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
-        <a class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl bg-forest text-white" onclick="window.app.navigate('#dashboard')">
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-white/90 backdrop-blur border-t border-border-soft shadow-nav rounded-t-3xl">
+        <a class="flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-forest text-white" onclick="window.app.navigate('#dashboard')">
           <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">dashboard</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
+          <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
         </a>
-        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#kanban')">
+        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#kanban')">
           <span class="material-symbols-outlined text-xl">view_kanban</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Pipeline</span>
+          <span class="text-[9px] font-bold uppercase tracking-wider">Pipeline</span>
         </a>
-        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#leads')">
+        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#leads')">
           <span class="material-symbols-outlined text-xl">table_rows</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Leads</span>
+          <span class="text-[9px] font-bold uppercase tracking-wider">Leads</span>
         </a>
-        <button class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest" onclick="window.app.navigate('#add-lead')">
+        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#calendar')">
+          <span class="material-symbols-outlined text-xl">calendar_today</span>
+          <span class="text-[9px] font-bold uppercase tracking-wider">Tasks</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#add-lead')">
           <span class="material-symbols-outlined text-xl">add_circle</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Add</span>
-        </button>
+          <span class="text-[9px] font-bold uppercase tracking-wider">Add</span>
+        </a>
       </nav>
     </div>
   `;

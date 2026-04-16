@@ -14,7 +14,7 @@ export function renderEditLead(lead, navigate) {
   const isInvestor = cats.includes('Investors');
   const isPhil = cats.includes('Philanthropy');
 
-  const stages = ['New','Contacted','Engaged','Meeting Set','Proposal Sent','Awaiting Response','Parked'];
+  const stages = ['New','Contacted','Engaged','Meeting Set','Proposal Sent','Awaiting Response','Parked','Secured'];
   const regions = ['Australia','New Zealand','UK','US','Europe','Asia','International'];
 
   const stageOptions = stages.map(s =>

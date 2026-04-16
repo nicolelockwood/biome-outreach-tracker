@@ -90,3 +90,23 @@ export async function createInteraction(interaction) {
     .single();
   return { data, error };
 }
+
+export async function getAllInteractions() {
+  const { data, error } = await supabase
+    .from('interactions')
+    .select('*')
+    .not('follow_up_date', 'is', null)
+    .order('follow_up_date', { ascending: true });
+  if (error) { console.error('getAllInteractions error:', error); return []; }
+  return data;
+}
+
+export async function updateInteraction(id, updates) {
+  const { data, error } = await supabase
+    .from('interactions')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  return { data, error };
+}
