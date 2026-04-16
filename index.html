@@ -281,25 +281,44 @@
 
     /* ââ Priority glass tints â replace flat left borders ââ */
     .priority-glass-high {
-      background: linear-gradient(135deg, rgba(138,58,58,0.12), rgba(255,255,255,0.91)) !important;
+      background: rgba(255, 255, 255, 0.92) !important;
       backdrop-filter: blur(28px) saturate(1.5);
       -webkit-backdrop-filter: blur(28px) saturate(1.5);
       border: 1px solid rgba(138,58,58,0.14);
-      box-shadow: 0 2px 8px rgba(20,52,42,0.06), 0 8px 32px rgba(20,52,42,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+      border-left: 3px solid rgba(138,58,58,0.35);
+      box-shadow: 0 2px 8px rgba(20,52,42,0.06), 0 8px 32px rgba(20,52,42,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
     }
     .priority-glass-medium {
-      background: linear-gradient(135deg, rgba(184,134,11,0.08), rgba(255,255,255,0.91)) !important;
+      background: rgba(255, 255, 255, 0.92) !important;
       backdrop-filter: blur(28px) saturate(1.5);
       -webkit-backdrop-filter: blur(28px) saturate(1.5);
       border: 1px solid rgba(184,134,11,0.12);
-      box-shadow: 0 2px 8px rgba(20,52,42,0.06), 0 8px 32px rgba(20,52,42,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+      border-left: 3px solid rgba(184,134,11,0.30);
+      box-shadow: 0 2px 8px rgba(20,52,42,0.06), 0 8px 32px rgba(20,52,42,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
     }
     .priority-glass-low {
-      background: linear-gradient(135deg, rgba(200,216,196,0.10), rgba(255,255,255,0.91)) !important;
+      background: rgba(255, 255, 255, 0.92) !important;
       backdrop-filter: blur(28px) saturate(1.5);
       -webkit-backdrop-filter: blur(28px) saturate(1.5);
       border: 1px solid rgba(200,216,196,0.18);
-      box-shadow: 0 2px 8px rgba(20,52,42,0.06), 0 8px 32px rgba(20,52,42,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+      border-left: 3px solid rgba(200,216,196,0.45);
+      box-shadow: 0 2px 8px rgba(20,52,42,0.06), 0 8px 32px rgba(20,52,42,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    /* Darken body text inside priority glass cards so it reads clearly */
+    .priority-glass-high p, .priority-glass-high span,
+    .priority-glass-medium p, .priority-glass-medium span,
+    .priority-glass-low p, .priority-glass-low span {
+      text-shadow: 0 0 0 transparent; /* reset any inherited shadow */
+    }
+    .priority-glass-high .text-ink-soft,
+    .priority-glass-medium .text-ink-soft,
+    .priority-glass-low .text-ink-soft {
+      color: #2d3d34 !important; /* ink-mid instead of ink-soft */
+    }
+    .priority-glass-high .text-ink-ghost,
+    .priority-glass-medium .text-ink-ghost,
+    .priority-glass-low .text-ink-ghost {
+      color: #5a6a60 !important; /* ink-soft instead of ink-ghost */
     }
 
     /* ââ SVG progress ring animation ââ */
