@@ -22,7 +22,7 @@ class App {
     this.leads = [];
     this.session = null;
     window.app = this;
-    // Global sign-in handler — called directly from signin button
+    // Global sign-in handler â called directly from signin button
     window.handleSignIn = async () => {
       const btn = document.getElementById('signin-btn');
       const errEl = document.getElementById('signin-error');
@@ -39,7 +39,7 @@ class App {
       btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>';
       const result = await window.app.signIn(email, password);
       if (result && result.error) {
-        errEl.textContent = result.error.message || 'Incorrect email or password — please try again.';
+        errEl.textContent = result.error.message || 'Incorrect email or password â please try again.';
         errEl.classList.remove('hidden');
         btn.disabled = false;
         btn.innerHTML = 'Enter Dashboard <span class="material-symbols-outlined text-xl">arrow_right_alt</span>';
@@ -75,7 +75,7 @@ class App {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       // Normalise Supabase error into a plain { message } object for display
-      const message = error.message || error.code?.replace(/_/g, ' ') || 'Invalid credentials — please try again.';
+      const message = error.message || error.code?.replace(/_/g, ' ') || 'Invalid credentials â please try again.';
       return { error: { message } };
     }
     this.session = data.session;
@@ -206,7 +206,7 @@ class App {
       return;
     }
 
-    // Public route — render signin
+    // Public route â render signin
     if (isPublic) {
       this.appElement.innerHTML = renderSignIn(this.navigate.bind(this));
       return;
@@ -266,7 +266,7 @@ class App {
 
     this.appElement.innerHTML = content;
 
-    // Post-render hooks — calendar month navigation + date filtering
+    // Post-render hooks â calendar month navigation + date filtering
     if (hash === 'calendar') {
       setTimeout(() => initCalendarControls(), 0);
     }
