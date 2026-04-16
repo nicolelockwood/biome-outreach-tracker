@@ -11,7 +11,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_KEY')!
+  Deno.env.get('SERVICE_KEY')!
 );
 
 function parseTicket(str: string | null): number {
