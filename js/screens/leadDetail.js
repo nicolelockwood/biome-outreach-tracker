@@ -18,17 +18,6 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
 
   const stageColour = stageColourClass;
 
-  // Card background + text — changes with pipeline stage
-  const cardStyle = (stage) => {
-    if (stage === 'Engaged')          return { bg: '#2d6b4a', text: '#fff', subtext: 'rgba(255,255,255,0.65)', icon: 'rgba(255,255,255,0.15)' };
-    if (stage === 'Meeting Set')      return { bg: '#8a7a3a', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
-    if (stage === 'Proposal Sent')    return { bg: '#1e4d3a', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
-    if (stage === 'Awaiting Response')return { bg: '#8a7a3a', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
-    if (stage === 'Parked')           return { bg: '#2d3d34', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
-    return                                   { bg: '#14342a', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
-  };
-  const cs = cardStyle(lead.stage);
-
   return `
     <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('leads')}
@@ -54,7 +43,7 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               <span class="material-symbols-outlined text-base">edit</span>
               Edit Lead
             </button>
-            <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2" onclick="window.app.showInteractionModal(${lead.id})">
+            <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button" onclick="window.app.showInteractionModal(${lead.id})">
               <span class="material-symbols-outlined text-base">add</span>
               Log Interaction
             </button>
@@ -96,17 +85,18 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               </div>
             </section>
 
-            <!-- Ticket / value card — colour reflects pipeline stage -->
-            <div class="rounded-2xl p-8 flex flex-col gap-4 relative overflow-hidden transition-colors duration-500"
-              style="background:${cs.bg}; color:${cs.text};">
-              <div class="absolute right-6 top-6" style="color:${cs.icon}; font-size:6rem; line-height:1;">
-                <span class="material-symbols-outlined" style="font-size:inherit;">${isPhil ? 'volunteer_activism' : 'payments'}</span>
+            <!-- Ticket / value strip — compact, glass-backed -->
+            <div class="card rounded-2xl p-5 flex items-center gap-5">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(20,52,42,0.08);">
+                <span class="material-symbols-outlined text-forest text-lg" style="font-variation-settings:'FILL' 1;">${isPhil ? 'volunteer_activism' : 'payments'}</span>
               </div>
-              <p class="text-[10px] font-bold uppercase tracking-[0.12em]" style="color:${cs.subtext};">${isBoth ? 'Investment & Engagement' : isPhil ? 'Engagement Details' : 'Investment Value'}</p>
-              <p class="text-4xl font-bold leading-tight" style="font-family:'Fraunces',Georgia,serif;">${lead.ticket_size || 'TBC'}</p>
-              <div class="flex items-center gap-3 mt-1 flex-wrap">
-                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase" style="background:rgba(255,255,255,0.15); color:${cs.text};">${lead.stage}</span>
-                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase" style="background:rgba(255,255,255,0.1); color:${cs.subtext};">${lead.priority === 'Critical' ? 'High' : lead.priority || 'Medium'} priority</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-0.5">${isBoth ? 'Investment & Engagement' : isPhil ? 'Engagement Value' : 'Investment Value'}</p>
+                <p class="text-2xl font-bold text-forest leading-tight" style="font-family:'Fraunces',Georgia,serif;">${lead.ticket_size || 'TBC'}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="px-2.5 py-1 rounded-full ${stageColour(lead.stage)} text-[9px] font-bold uppercase tracking-wider">${lead.stage}</span>
+                <span class="px-2.5 py-1 rounded-full bg-surface-low text-ink-soft text-[9px] font-bold uppercase tracking-wider">${lead.priority === 'Critical' ? 'High' : lead.priority || 'Medium'}</span>
               </div>
             </div>
 

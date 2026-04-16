@@ -1,7 +1,8 @@
 export function renderInteractionModal(leadId, onClose) {
   return `
-    <div class="fixed inset-0 z-[100] flex items-start justify-center pt-20 md:pt-28 bg-black/50 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) window.app.closeInteractionModal()">
-      <div class="relative w-full md:max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden mb-10" onclick="event.stopPropagation()">
+    <div class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) window.app.closeInteractionModal()">
+      <div class="min-h-full flex items-start justify-center px-4 pt-20 md:pt-28 pb-10">
+        <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
 
         <!-- Top accent bar -->
         <div class="h-1 w-full bg-gradient-to-r from-forest via-canopy to-forest opacity-80"></div>
@@ -132,6 +133,7 @@ export function renderInteractionModal(leadId, onClose) {
             </div>
 
           </form>
+        </div>
         </div>
       </div>
     </div>
