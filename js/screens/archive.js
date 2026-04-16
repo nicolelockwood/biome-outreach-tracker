@@ -22,10 +22,41 @@ function fmtDate(d) {
   } catch { return d; }
 }
 
+// SVG progress ring generator
+function progressRing(pct, size, strokeWidth, color, trailColor = 'rgba(20,52,42,0.08)') {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (pct / 100) * circumference;
+  const center = size / 2;
+
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="block">
+      <!-- Trail -->
+      <circle cx="${center}" cy="${center}" r="${radius}"
+        fill="none" stroke="${trailColor}" stroke-width="${strokeWidth}"
+        stroke-linecap="round"/>
+      <!-- Progress -->
+      <circle cx="${center}" cy="${center}" r="${radius}"
+        fill="none" stroke="${color}" stroke-width="${strokeWidth}"
+        stroke-linecap="round"
+        class="progress-ring-circle"
+        stroke-dasharray="${circumference}"
+        stroke-dashoffset="${offset}"/>
+    </svg>`;
+}
+
 export function renderArchive(navigate, securedLeads = [], allInteractions = []) {
   const totalLanded = securedLeads.reduce((sum, l) => sum + parseTicket(l.ticket_size), 0);
   const philLanded  = securedLeads.filter(l => (l.category||'').includes('Philanthropy')).reduce((sum, l) => sum + parseTicket(l.ticket_size), 0);
   const invLanded   = securedLeads.filter(l => (l.category||'').includes('Investors')).reduce((sum, l) => sum + parseTicket(l.ticket_size), 0);
+
+  const PHIL_GOAL = 5_000_000;
+  const INV_GOAL  = 100_000_000;
+  const TOTAL_GOAL = PHIL_GOAL + INV_GOAL;
+
+  const philPct = Math.min(100, Math.round(philLanded / PHIL_GOAL * 100));
+  const invPct  = Math.min(100, Math.round(invLanded / INV_GOAL * 100));
+  const totalPct = Math.min(100, Math.round(totalLanded / TOTAL_GOAL * 100));
 
   // Group interactions by lead_id
   const intByLead = {};
@@ -37,7 +68,7 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
   const outcomeColour = (o) => {
     if (o === 'Committed' || o === 'Interested') return 'bg-meadow text-forest';
     if (o === 'Declined') return 'bg-error/10 text-error';
-    if (o === 'Meeting Booked' || o === 'Proposal Requested') return 'bg-amber-50 text-amber-700';
+    if (o === 'Meeting Booked' || o === 'Proposal Requested') return 'bg-stage-hot-bg text-stage-hot';
     return 'bg-surface-mid text-ink-soft';
   };
 
@@ -59,7 +90,7 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
     return `
     <div class="card rounded-2xl overflow-hidden">
       <!-- Lead header -->
-      <div class="p-6 bg-forest text-white relative overflow-hidden">
+      <div class="p-6 relative overflow-hidden" style="background: rgba(20,52,42,0.85); backdrop-filter: blur(16px); color: white;">
         <div class="absolute right-5 top-5 opacity-10">
           <span class="material-symbols-outlined" style="font-size:5rem;">${isPhil ? 'volunteer_activism' : 'payments'}</span>
         </div>
@@ -135,22 +166,46 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
           </p>
         </section>
 
-        <!-- Summary strip -->
-        <section class="grid grid-cols-3 gap-4 mb-10">
-          <div class="card rounded-2xl p-5 text-center">
-            <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-2">Total Landed</p>
-            <p class="text-2xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(totalLanded)}</p>
-            <p class="text-xs text-ink-ghost mt-1">${securedLeads.length} commitment${securedLeads.length !== 1 ? 's' : ''}</p>
+        <!-- Premium progress ring cards -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+          <!-- Total Landed -->
+          <div class="card rounded-2xl p-6 flex flex-col items-center text-center">
+            <div class="relative mb-4">
+              ${progressRing(totalPct, 140, 8, '#14342a')}
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <p class="text-2xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(totalLanded)}</p>
+                <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost">${totalPct}%</p>
+              </div>
+            </div>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-1">Total Landed</p>
+            <p class="text-xs text-ink-soft">${securedLeads.length} commitment${securedLeads.length !== 1 ? 's' : ''}</p>
+            <p class="text-[10px] text-ink-ghost mt-2">of ${fmtM(TOTAL_GOAL)} combined goal</p>
           </div>
-          <div class="card rounded-2xl p-5 text-center">
-            <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-2">Philanthropy</p>
-            <p class="text-2xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(philLanded)}</p>
-            <p class="text-xs text-ink-ghost mt-1">of $5M goal</p>
+
+          <!-- Philanthropy -->
+          <div class="card rounded-2xl p-6 flex flex-col items-center text-center">
+            <div class="relative mb-4">
+              ${progressRing(philPct, 140, 8, '#5a8a4a')}
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <p class="text-2xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(philLanded)}</p>
+                <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost">${philPct}%</p>
+              </div>
+            </div>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-philanthropy mb-1">Philanthropy</p>
+            <p class="text-xs text-ink-soft">of ${fmtM(PHIL_GOAL)} goal</p>
           </div>
-          <div class="card rounded-2xl p-5 text-center">
-            <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost mb-2">Investment</p>
-            <p class="text-2xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(invLanded)}</p>
-            <p class="text-xs text-ink-ghost mt-1">of $100M goal</p>
+
+          <!-- Investment -->
+          <div class="card rounded-2xl p-6 flex flex-col items-center text-center">
+            <div class="relative mb-4">
+              ${progressRing(invPct, 140, 8, '#2a6a5a')}
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <p class="text-2xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${fmtM(invLanded)}</p>
+                <p class="text-[9px] font-bold uppercase tracking-wider text-ink-ghost">${invPct}%</p>
+              </div>
+            </div>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-investor mb-1">Investment</p>
+            <p class="text-xs text-ink-soft">of ${fmtM(INV_GOAL)} goal</p>
           </div>
         </section>
 
@@ -163,8 +218,8 @@ export function renderArchive(navigate, securedLeads = [], allInteractions = [])
           <div class="w-16 h-16 rounded-2xl bg-meadow flex items-center justify-center mx-auto mb-5">
             <span class="material-symbols-outlined text-forest text-3xl" style="font-variation-settings:'FILL' 1;">workspace_premium</span>
           </div>
-          <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-forest mb-2">No secured funding yet</h3>
-          <p class="text-ink-soft text-base mb-6 max-w-sm mx-auto">When a lead commits, edit their stage to <strong class="text-forest">Secured</strong> and they'll appear here with their full interaction trail.</p>
+          <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-white drop-shadow-sm mb-2">No secured funding yet</h3>
+          <p class="text-white/60 text-base mb-6 max-w-sm mx-auto">When a lead commits, edit their stage to <strong class="text-white">Secured</strong> and they'll appear here with their full interaction trail.</p>
           <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm cursor-pointer" onclick="window.app.navigate('#kanban')">View Pipeline</button>
         </div>`}
       </main>

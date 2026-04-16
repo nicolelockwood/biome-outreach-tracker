@@ -2,8 +2,8 @@ export function renderOutcomeModal(leadId, currentStage) {
   const stages = ['New', 'Contacted', 'Engaged', 'Meeting Set', 'Proposal Sent', 'Awaiting Response', 'Secured', 'Parked', 'Closed'];
 
   return `
-    <div class="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm" onclick="if(event.target === this) window.app.closeOutcomeModal()">
-      <div class="relative w-full md:max-w-md bg-white rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
+    <div class="fixed inset-0 z-[100] flex items-start justify-center pt-20 md:pt-28 bg-black/50 backdrop-blur-sm overflow-y-auto" onclick="if(event.target === this) window.app.closeOutcomeModal()">
+      <div class="relative w-full md:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden mb-10" onclick="event.stopPropagation()">
 
         <!-- Top accent — gradient feels more "final" than the interaction modal -->
         <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #3d8b63, #14342a, #8a7a3a);"></div>

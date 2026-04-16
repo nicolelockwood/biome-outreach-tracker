@@ -3,8 +3,8 @@ import { navHTML } from './dashboard.js';
 const STAGES = [
   {
     name: 'New',
+    epicName: 'Discovery & Alignment',
     icon: 'search',
-    colour: { bg: 'bg-surface-mid', border: 'border-border', badge: 'bg-surface-high text-ink-soft', num: 'text-ink-ghost', headerBg: 'rgba(255,255,255,0.70)' },
     goal: 'Qualify the lead and determine if there is a genuine mission or returns alignment before investing relationship capital.',
     actions: [
       'Research the organisation — mission, portfolio, past giving or investments',
@@ -27,8 +27,8 @@ Nicole`,
   },
   {
     name: 'Contacted',
+    epicName: 'First Touch',
     icon: 'mail',
-    colour: { bg: 'bg-canopy-light', border: 'border-canopy/20', badge: 'bg-canopy-light text-canopy', num: 'text-canopy/40', headerBg: 'rgba(61,139,99,0.10)' },
     goal: 'Open a two-way conversation. Your goal at this stage is a reply — not a yes.',
     actions: [
       'Send initial outreach (email, LinkedIn, warm intro)',
@@ -52,8 +52,8 @@ Nicole`,
   },
   {
     name: 'Engaged',
+    epicName: 'Building Trust',
     icon: 'forum',
-    colour: { bg: 'bg-forest/5', border: 'border-forest/20', badge: 'bg-forest/10 text-forest', num: 'text-forest/30', headerBg: 'rgba(20,52,42,0.08)' },
     goal: 'Deepen the relationship. Understand what they care about, what their process looks like, and where Earthly fits.',
     actions: [
       'Schedule a proper intro or scoping call',
@@ -81,8 +81,8 @@ Nicole`,
   },
   {
     name: 'Meeting Set',
+    epicName: 'The Conversation',
     icon: 'calendar_month',
-    colour: { bg: 'bg-amber-light', border: 'border-amber/20', badge: 'bg-amber-light text-amber', num: 'text-amber/30', headerBg: 'rgba(138,122,58,0.08)' },
     goal: 'Make the meeting count. Come prepared to listen as much as to present.',
     actions: [
       'Confirm the meeting 24–48 hours beforehand',
@@ -106,8 +106,8 @@ Nicole`,
   },
   {
     name: 'Proposal Sent',
+    epicName: 'The Invitation',
     icon: 'description',
-    colour: { bg: 'bg-copper-light', border: 'border-copper/20', badge: 'bg-copper-light text-copper', num: 'text-copper/30', headerBg: 'rgba(138,122,58,0.06)' },
     goal: 'Hold the relationship while they deliberate. Your job is to be available, not pushy.',
     actions: [
       'Send the proposal with a personalised cover note — not just an attachment',
@@ -132,8 +132,8 @@ Nicole`,
   },
   {
     name: 'Awaiting Response',
+    epicName: 'Holding Space',
     icon: 'hourglass_top',
-    colour: { bg: 'bg-surface-mid', border: 'border-border', badge: 'bg-amber-light text-amber', num: 'text-amber/30', headerBg: 'rgba(255,255,255,0.65)' },
     goal: 'Stay in their peripheral vision without being a nuisance. Keep the door open.',
     actions: [
       'Note the date you last heard from them',
@@ -158,8 +158,8 @@ Nicole`,
   },
   {
     name: 'Secured',
+    epicName: 'Partnership Sealed',
     icon: 'verified',
-    colour: { bg: 'bg-forest', border: 'border-forest', badge: 'bg-white/20 text-white', num: 'text-white/20', headerBg: '#14342a' },
     goal: 'Lock in the commitment and set the relationship up for long-term trust. The deal is just the beginning.',
     actions: [
       'Confirm next steps: legal docs, transfer timeline, reporting cadence',
@@ -188,8 +188,8 @@ export function renderStrategy(navigate) {
     <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('strategy')}
 
-      <!-- Dark hero band — the vault feeling -->
-      <div class="bg-forest text-white py-14 mb-10">
+      <!-- Glass hero band — frosted forest green, canopy shows through -->
+      <div class="text-white py-14 mb-10" style="background: rgba(20,52,42,0.75); backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); border-bottom: 1px solid rgba(255,255,255,0.08);">
         <div class="max-w-5xl mx-auto px-6">
           <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-white/40 mb-3">Sales Playbook</p>
           <h1 style="font-family:'Fraunces',Georgia,serif;" class="text-5xl font-semibold leading-tight mb-4">Pipeline Strategy</h1>
@@ -201,40 +201,38 @@ export function renderStrategy(navigate) {
 
       <main class="max-w-5xl mx-auto px-6 pb-16">
 
-        <!-- Stages -->
+        <!-- Stages — all start closed, uniform glassmorphism -->
         <div class="space-y-5">
           ${STAGES.map((s, i) => {
             const isSecured = s.name === 'Secured';
-            const summaryTextClass = isSecured ? 'text-white' : 'text-forest';
-            const summarySubClass = isSecured ? 'text-white/70' : 'text-ink-mid';
-            const iconBg = isSecured ? 'bg-white/15' : 'bg-white/80';
-            const iconColor = isSecured ? 'text-white' : 'text-forest';
             return `
-          <details class="group rounded-2xl overflow-hidden" style="border: 1.5px solid ${isSecured ? '#14342a' : 'rgba(20,52,42,0.12)'}; box-shadow: 0 2px 8px rgba(26,26,24,0.04);" ${i === 0 ? 'open' : ''}>
-            <summary class="flex items-center gap-5 p-6 cursor-pointer list-none hover:opacity-95 transition-all" style="background: ${s.colour.headerBg};">
-              <!-- Stage number — big, architectural -->
-              <div class="text-3xl font-bold ${isSecured ? 'text-white/20' : 'text-ink-ghost/30'} shrink-0 w-8 text-center" style="font-family:'Fraunces',Georgia,serif;">${i + 1}</div>
-              <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0" style="backdrop-filter: blur(4px);">
-                <span class="material-symbols-outlined ${iconColor} text-xl" style="font-variation-settings:'FILL' 1;">${s.icon}</span>
+          <details class="group rounded-2xl overflow-hidden" style="border: 1.5px solid rgba(255,255,255,0.35); box-shadow: 0 2px 12px rgba(20,52,42,0.06);">
+            <summary class="flex items-center gap-5 p-6 cursor-pointer list-none hover:opacity-95 transition-all" style="background: rgba(255,255,255,0.75); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3);">
+              <!-- Stage number -->
+              <div class="text-3xl font-bold text-ink-ghost/20 shrink-0 w-8 text-center" style="font-family:'Fraunces',Georgia,serif;">${i + 1}</div>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.80); backdrop-filter: blur(4px);">
+                <span class="material-symbols-outlined text-forest text-xl" style="font-variation-settings:'FILL' 1;">${s.icon}</span>
               </div>
               <div class="flex-1">
-                <div class="flex items-center gap-3">
-                  <span class="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${s.colour.badge}">${s.name}</span>
+                <!-- Epic name is the feature now -->
+                <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-forest leading-snug">${s.epicName}</h3>
+                <div class="flex items-center gap-3 mt-1.5">
+                  <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-stage-pipeline-bg text-stage-pipeline">${s.name}</span>
+                  <p class="text-xs text-ink-soft leading-snug line-clamp-1">${s.goal.slice(0, 80)}${s.goal.length > 80 ? '…' : ''}</p>
                 </div>
-                <p class="text-sm font-semibold ${summarySubClass} mt-1 leading-snug">${s.goal.slice(0, 90)}${s.goal.length > 90 ? '…' : ''}</p>
               </div>
-              <span class="material-symbols-outlined ${isSecured ? 'text-white/40' : 'text-ink-ghost'} group-open:rotate-180 transition-transform duration-200">expand_more</span>
+              <span class="material-symbols-outlined text-ink-ghost group-open:rotate-180 transition-transform duration-200">expand_more</span>
             </summary>
 
-            <div class="p-7 space-y-6" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-top: 1.5px solid ${isSecured ? 'rgba(255,255,255,0.1)' : 'rgba(20,52,42,0.08)'};">
+            <div class="p-7 space-y-6" style="background: rgba(255,255,255,0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1.5px solid rgba(20,52,42,0.06);">
 
-              <!-- Goal — strong card with left accent -->
-              <div class="rounded-xl p-5 border-l-4" style="background: ${s.colour.headerBg}; border-left-color: ${isSecured ? '#3d8b63' : s.name === 'Meeting Set' ? '#8a7a3a' : s.name === 'Proposal Sent' ? '#8a7a3a' : '#3d8b63'};">
+              <!-- Goal -->
+              <div class="rounded-xl p-5 border-l-4 border-l-canopy" style="background: rgba(61,139,99,0.06);">
                 <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-2">Stage Goal</p>
                 <p class="text-sm text-ink-mid leading-relaxed font-medium">${s.goal}</p>
               </div>
 
-              <!-- Actions + Watch side by side -->
+              <!-- Actions + Watch -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-3">Key Actions</p>
@@ -264,7 +262,7 @@ export function renderStrategy(navigate) {
                 </div>
               </div>
 
-              <!-- Email template — darker bg for contrast -->
+              <!-- Email template -->
               <div>
                 <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-3">Template Message</p>
                 <div class="rounded-xl p-5 relative" style="background: rgba(20,52,42,0.05);">
@@ -288,7 +286,7 @@ export function renderStrategy(navigate) {
           `}).join('')}
         </div>
 
-        <!-- Footer note — warm band -->
+        <!-- Footer note -->
         <div class="mt-12 p-6 rounded-2xl card-warm">
           <div class="flex items-start gap-3">
             <span class="material-symbols-outlined text-copper text-xl shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1;">eco</span>

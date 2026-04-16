@@ -5,7 +5,7 @@ import { renderKanban } from './screens/kanban.js';
 import { renderLeadDetail } from './screens/leadDetail.js';
 import { renderAddLead } from './screens/addLead.js';
 import { renderEditLead } from './screens/editLead.js';
-import { renderCalendar } from './screens/calendar.js';
+import { renderCalendar, initCalendarControls } from './screens/calendar.js';
 import { renderStrategy } from './screens/strategy.js';
 import { renderArchive } from './screens/archive.js';
 import { renderInteractionModal } from './screens/interactionModal.js';
@@ -265,6 +265,11 @@ class App {
     }
 
     this.appElement.innerHTML = content;
+
+    // Post-render hooks — calendar month navigation + date filtering
+    if (hash === 'calendar') {
+      setTimeout(() => initCalendarControls(), 0);
+    }
 
     // Re-attach modals if needed
     if (this.showingModal) {

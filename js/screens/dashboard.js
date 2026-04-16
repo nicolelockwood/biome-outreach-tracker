@@ -40,6 +40,19 @@ export function navHTML(active = 'dashboard') {
   </header>`;
 }
 
+// Shared stage colour utility — used across the entire app
+export function stageColourClass(stage) {
+  if (stage === 'Engaged')           return 'bg-stage-warm-bg text-stage-warm';
+  if (stage === 'Contacted')         return 'bg-stage-active-bg text-stage-active';
+  if (stage === 'New')               return 'bg-stage-pipeline-bg text-stage-pipeline';
+  if (stage === 'Meeting Set')       return 'bg-stage-hot-bg text-stage-hot';
+  if (stage === 'Proposal Sent')     return 'bg-stage-hot-bg text-stage-hot';
+  if (stage === 'Awaiting Response') return 'bg-stage-awaiting-bg text-stage-awaiting';
+  if (stage === 'Secured')           return 'bg-stage-secured-bg text-stage-secured';
+  if (stage === 'Parked' || stage === 'Closed') return 'bg-stage-inactive-bg text-stage-inactive';
+  return 'bg-stage-pipeline-bg text-stage-pipeline';
+}
+
 // Parse ticket_size strings like "$5M", "$1,000,000", "$500K" → number
 function parseTicket(str) {
   if (!str) return 0;
@@ -54,6 +67,13 @@ function fmtM(n) {
   if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
   if (n >= 1_000) return '$' + Math.round(n / 1_000) + 'K';
   return n > 0 ? '$' + n.toLocaleString() : '$0';
+}
+
+// Priority glass tint class
+function priorityGlassClass(priority) {
+  if (priority === 'Critical' || priority === 'High') return 'priority-glass-high';
+  if (priority === 'Low') return 'priority-glass-low';
+  return 'priority-glass-medium';
 }
 
 export function renderDashboard(navigate, leads = [], session = null) {
@@ -98,13 +118,13 @@ export function renderDashboard(navigate, leads = [], session = null) {
   const philGoal = calcGoal(philanthropy, PHIL_GOAL);
   const invGoal  = calcGoal(investors,    INV_GOAL);
 
-  // Stage rows data
+  // Stage rows data — with new distinct colour palette
   const stages = [
-    { label: 'Engaged',            count: engaged.length,                              bar: 'bg-canopy',        badge: 'bg-canopy/10 text-canopy',          tag: 'Warm' },
-    { label: 'Contacted',          count: contacted.length,                            bar: 'bg-forest-light',  badge: 'bg-meadow text-forest',             tag: 'Active' },
-    { label: 'New / Researching',  count: newLeads.length,                             bar: 'bg-border',        badge: 'bg-surface-mid text-ink-soft',      tag: 'Pipeline' },
-    { label: 'Meeting / Proposal', count: meetingSet.length + proposalSent.length,     bar: 'bg-warning',       badge: 'bg-warning-bg text-warning',        tag: 'Hot' },
-    { label: 'Parked / Closed',    count: parked.length + closed.length,               bar: 'bg-surface-high',  badge: 'bg-surface-mid text-ink-ghost',     tag: 'Inactive' },
+    { label: 'Engaged',            count: engaged.length,                              bar: 'bg-stage-warm',     badge: 'bg-stage-warm-bg text-stage-warm',           tag: 'Warm' },
+    { label: 'Contacted',          count: contacted.length,                            bar: 'bg-stage-active',   badge: 'bg-stage-active-bg text-stage-active',       tag: 'Active' },
+    { label: 'New / Researching',  count: newLeads.length,                             bar: 'bg-stage-pipeline', badge: 'bg-stage-pipeline-bg text-stage-pipeline',   tag: 'Pipeline' },
+    { label: 'Meeting / Proposal', count: meetingSet.length + proposalSent.length,     bar: 'bg-stage-hot',      badge: 'bg-stage-hot-bg text-stage-hot',             tag: 'Hot' },
+    { label: 'Parked / Closed',    count: parked.length + closed.length,               bar: 'bg-stage-inactive', badge: 'bg-stage-inactive-bg text-stage-inactive',   tag: 'Inactive' },
   ];
   const maxCount = Math.max(...stages.map(s => s.count), 1);
 
@@ -137,7 +157,6 @@ export function renderDashboard(navigate, leads = [], session = null) {
 
         <!-- ══════════════════════════════════════════════════
              ZONE 1 — WELCOME + PULSE
-             The entry hall: warm, spacious, orienting
              ══════════════════════════════════════════════════ -->
         <section class="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
@@ -161,10 +180,17 @@ export function renderDashboard(navigate, leads = [], session = null) {
                 View List →
               </button>
             </div>
-            <button class="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-sm border-2 border-forest text-forest hover:bg-forest hover:text-white transition-all duration-200 cursor-pointer" onclick="window.app.navigate('#add-lead')">
-              <span class="material-symbols-outlined text-base">add</span>
-              New Lead
-            </button>
+            <!-- New Lead button — glass card style to match stat boxes -->
+            <div class="card rounded-2xl p-6 flex items-center gap-4 cursor-pointer hover:shadow-card-hover transition-all group" onclick="window.app.navigate('#add-lead')">
+              <div class="w-11 h-11 rounded-xl icon-forest flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-white text-lg" style="font-variation-settings:'FILL' 1;">add_circle</span>
+              </div>
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-ghost mb-0.5">Add to Pipeline</p>
+                <p class="text-lg font-bold text-forest group-hover:text-canopy transition-colors">New Lead</p>
+              </div>
+              <span class="material-symbols-outlined text-ink-ghost text-base ml-auto group-hover:text-forest transition-colors">arrow_forward</span>
+            </div>
           </div>
         </section>
 
@@ -212,9 +238,9 @@ export function renderDashboard(navigate, leads = [], session = null) {
       </main>
 
       <!-- ══════════════════════════════════════════════════
-           ZONE 2 — FUNDING GOALS
-           A distinct warm band — feels like stepping into
-           the financial room. Different background, different weight.
+           ZONE 2 — FUNDING GOALS (moved ABOVE lead stages)
+           Goal attainment indicators first — if none of the
+           leads land, the goal isn't reached
            ══════════════════════════════════════════════════ -->
       <div class="max-w-7xl mx-auto px-6 mt-10">
           <div class="flex items-center gap-3 mb-6">
@@ -269,7 +295,7 @@ export function renderDashboard(navigate, leads = [], session = null) {
 
       <!-- ══════════════════════════════════════════════════
            ZONE 3 — PIPELINE INTELLIGENCE
-           Back to the main room. Distribution + Priority.
+           Distribution + Priority
            ══════════════════════════════════════════════════ -->
       <div class="max-w-7xl mx-auto px-6 pt-10 pb-16">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -315,14 +341,14 @@ export function renderDashboard(navigate, leads = [], session = null) {
 
             <div class="space-y-4 mb-6">
               ${priorityLeads.map(lead => `
-              <div class="card rounded-2xl p-5 cursor-pointer border-l-4 ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'border-l-error' : 'border-l-canopy'}" onclick="window.app.navigate('#lead/${lead.id}')">
+              <div class="card rounded-2xl p-5 cursor-pointer ${priorityGlassClass(lead.priority)}" onclick="window.app.navigate('#lead/${lead.id}')">
                 <div class="flex items-start justify-between mb-2">
                   <h4 class="font-semibold text-forest text-base leading-tight">${lead.org_name}</h4>
                   <span class="material-symbols-outlined text-sm ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'text-error' : 'text-canopy'}" style="font-variation-settings:'FILL' 1;">priority_high</span>
                 </div>
                 <p class="text-sm text-ink-soft mb-3 line-clamp-2 leading-relaxed">${lead.action || lead.comments || 'No action noted'}</p>
                 <div class="flex items-center gap-2">
-                  <span class="px-2 py-0.5 bg-meadow text-forest text-[10px] font-bold uppercase tracking-wider rounded-full">${lead.stage}</span>
+                  <span class="px-2 py-0.5 ${stageColourClass(lead.stage)} text-[10px] font-bold uppercase tracking-wider rounded-full">${lead.stage}</span>
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" style="${lead.category === 'Philanthropy' ? 'background:rgba(90,138,74,0.12);color:#5a8a4a;' : 'background:rgba(42,106,90,0.12);color:#2a6a5a;'}">${lead.category}</span>
                 </div>
               </div>

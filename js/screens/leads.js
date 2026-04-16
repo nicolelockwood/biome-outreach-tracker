@@ -1,4 +1,4 @@
-import { navHTML } from './dashboard.js';
+import { navHTML, stageColourClass } from './dashboard.js';
 
 // Shared filter logic — stored as a string so it can be called from any filter's onchange/oninput
 const FILTER_FN = `(function(){
@@ -38,14 +38,7 @@ export function renderLeads(navigate, leads = []) {
     return '<span class="inline-block w-2 h-2 rounded-full bg-meadow-mid border border-border-soft"></span>';
   };
 
-  const stageColour = (stage) => {
-    if (stage === 'Engaged')          return 'bg-canopy/10 text-canopy';
-    if (stage === 'Contacted')        return 'bg-meadow text-forest';
-    if (stage === 'Meeting Set' || stage === 'Proposal Sent') return 'bg-amber-50 text-amber-700';
-    if (stage === 'Awaiting Response') return 'bg-amber-50 text-amber-700';
-    if (stage === 'Parked' || stage === 'Closed') return 'bg-surface-mid text-ink-ghost';
-    return 'bg-surface-mid text-ink-soft';
-  };
+  const stageColour = stageColourClass;
 
   const cats = (lead) => (lead.category || '').split(',').map(c => c.trim());
   const catLabel = (lead) => {

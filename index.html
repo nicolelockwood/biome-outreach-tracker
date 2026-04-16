@@ -56,6 +56,22 @@
             "border":       "rgba(20,52,42,0.10)",
             "border-soft":  "rgba(20,52,42,0.06)",
 
+            /* ── Stage palette — psychologically distinct ── */
+            "stage-warm":       "#b8860b",   /* warm amber/gold — Engaged */
+            "stage-warm-bg":    "rgba(184,134,11,0.12)",
+            "stage-active":     "#3d8b63",   /* canopy green — Contacted */
+            "stage-active-bg":  "rgba(61,139,99,0.12)",
+            "stage-pipeline":   "#6b7d8a",   /* cool mist/silver — New */
+            "stage-pipeline-bg":"rgba(107,125,138,0.12)",
+            "stage-hot":        "#b0603a",   /* rich copper/terracotta — Meeting/Proposal */
+            "stage-hot-bg":     "rgba(176,96,58,0.12)",
+            "stage-inactive":   "#6a7a72",   /* muted slate — Parked/Closed */
+            "stage-inactive-bg":"rgba(106,122,114,0.12)",
+            "stage-secured":    "#14342a",   /* deep forest — Secured */
+            "stage-secured-bg": "rgba(20,52,42,0.12)",
+            "stage-awaiting":   "#8a6a3a",   /* warm bronze — Awaiting Response */
+            "stage-awaiting-bg":"rgba(138,106,58,0.12)",
+
             /* ── Semantic ── */
             "error":        "#8a3a3a",
             "error-bg":     "rgba(138,58,58,0.08)",
@@ -261,6 +277,27 @@
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+    }
+
+    /* ── Priority glass tints — replace flat left borders ── */
+    .priority-glass-high {
+      background: linear-gradient(135deg, rgba(138,58,58,0.06), rgba(255,255,255,0.82)) !important;
+      border: 1px solid rgba(138,58,58,0.15);
+    }
+    .priority-glass-medium {
+      background: linear-gradient(135deg, rgba(184,134,11,0.05), rgba(255,255,255,0.82)) !important;
+      border: 1px solid rgba(184,134,11,0.12);
+    }
+    .priority-glass-low {
+      background: linear-gradient(135deg, rgba(200,216,196,0.15), rgba(255,255,255,0.82)) !important;
+      border: 1px solid rgba(200,216,196,0.25);
+    }
+
+    /* ── SVG progress ring animation ── */
+    .progress-ring-circle {
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
     }
 
     /* ── Mobile bottom nav glass ── */

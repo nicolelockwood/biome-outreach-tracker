@@ -3,23 +3,23 @@ import { navHTML } from './dashboard.js';
 function renderCard(lead) {
   const isPhilanthropy = lead.category === 'Philanthropy';
   const isHigh = lead.priority === 'Critical' || lead.priority === 'High';
-  const isMed  = lead.priority === 'Medium' || (!isHigh && lead.priority !== 'Low');
   const isLow  = lead.priority === 'Low';
 
   const priorityBadge = isHigh
     ? '<span class="px-2 py-0.5 bg-error/10 text-error text-[9px] font-bold uppercase tracking-wider rounded-full">High</span>'
     : isLow
-    ? '<span class="px-2 py-0.5 bg-meadow text-forest text-[9px] font-bold uppercase tracking-wider rounded-full">Low</span>'
-    : '<span class="px-2 py-0.5 bg-canopy/15 text-canopy text-[9px] font-bold uppercase tracking-wider rounded-full">Med</span>';
+    ? '<span class="px-2 py-0.5 bg-stage-pipeline-bg text-stage-pipeline text-[9px] font-bold uppercase tracking-wider rounded-full">Low</span>'
+    : '<span class="px-2 py-0.5 bg-stage-warm-bg text-stage-warm text-[9px] font-bold uppercase tracking-wider rounded-full">Med</span>';
 
-  const borderClass = isHigh ? 'border-l-error' : isLow ? 'border-l-meadow-mid' : 'border-l-canopy';
+  // Priority glass tint class instead of flat left border
+  const glassClass = isHigh ? 'priority-glass-high' : isLow ? 'priority-glass-low' : 'priority-glass-medium';
 
   const categoryBadge = isPhilanthropy
     ? '<span class="px-2 py-0.5 bg-meadow text-forest text-[9px] font-bold uppercase tracking-wider rounded-full">Philanthropy</span>'
     : '<span class="px-2 py-0.5 bg-surface-mid text-ink-soft text-[9px] font-bold uppercase tracking-wider rounded-full">Investor</span>';
 
   return `
-    <article class="card rounded-2xl p-5 cursor-pointer border-l-2 ${borderClass}"
+    <article class="card rounded-2xl p-5 cursor-pointer ${glassClass}"
       onclick="window.app.navigate('#lead/${lead.id}')">
       <div class="flex items-start justify-between gap-2 mb-3">
         ${categoryBadge}
@@ -37,29 +37,30 @@ function renderCard(lead) {
 }
 
 const COL_CONFIG = [
-  { key: 'new',      title: 'New',              dotClass: 'bg-border',        filter: l => l.stage === 'New' },
-  { key: 'contacted',title: 'Contacted',         dotClass: 'bg-ink-soft',      filter: l => l.stage === 'Contacted' },
-  { key: 'engaged',  title: 'Engaged',           dotClass: 'bg-canopy',        filter: l => l.stage === 'Engaged' },
-  { key: 'meeting',  title: 'Meeting / Proposal',dotClass: 'bg-warning',       filter: l => l.stage === 'Meeting Set' || l.stage === 'Proposal Sent' || l.stage === 'Awaiting Response' },
-  { key: 'parked',   title: 'Parked',            dotClass: 'bg-surface-high',  filter: l => l.stage === 'Parked' || l.stage === 'Closed' },
-  { key: 'secured',  title: 'Secured ✓',         dotClass: 'bg-forest',        filter: l => l.stage === 'Secured' },
+  { key: 'new',      title: 'New',              dotColor: '#6b7d8a',  filter: l => l.stage === 'New' },
+  { key: 'contacted',title: 'Contacted',         dotColor: '#3d8b63',  filter: l => l.stage === 'Contacted' },
+  { key: 'engaged',  title: 'Engaged',           dotColor: '#b8860b',  filter: l => l.stage === 'Engaged' },
+  { key: 'meeting',  title: 'Meeting / Proposal',dotColor: '#b0603a',  filter: l => l.stage === 'Meeting Set' || l.stage === 'Proposal Sent' || l.stage === 'Awaiting Response' },
+  { key: 'parked',   title: 'Parked',            dotColor: '#6a7a72',  filter: l => l.stage === 'Parked' || l.stage === 'Closed' },
+  { key: 'secured',  title: 'Secured ✓',         dotColor: '#14342a',  filter: l => l.stage === 'Secured' },
 ];
 
 function renderColumn(col, leads) {
   const colLeads = leads.filter(col.filter);
   return `
     <div class="flex flex-col gap-4 shrink-0" style="width:288px;">
-      <div class="flex items-center justify-between px-1 mb-1">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full ${col.dotClass} inline-block"></span>
-          <h3 class="text-xs font-bold uppercase tracking-[0.12em] text-ink-soft">${col.title}</h3>
+      <!-- Glass-backed column header for contrast on dark forest bg -->
+      <div class="flex items-center justify-between px-3 py-2.5 rounded-xl mb-1" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4);">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full inline-block" style="background: ${col.dotColor};"></span>
+          <h3 class="text-xs font-bold uppercase tracking-[0.12em] text-forest">${col.title}</h3>
         </div>
-        <span class="text-xs font-bold text-ink-ghost bg-surface-mid px-2 py-0.5 rounded-full">${colLeads.length}</span>
+        <span class="text-xs font-bold text-white bg-forest px-2.5 py-1 rounded-full">${colLeads.length}</span>
       </div>
       ${colLeads.length > 0
         ? colLeads.map(l => renderCard(l)).join('')
-        : `<div class="h-20 rounded-2xl border-2 border-dashed border-border-soft flex items-center justify-center">
-             <p class="text-[10px] font-bold uppercase tracking-widest text-ink-ghost">Empty</p>
+        : `<div class="h-20 rounded-2xl border-2 border-dashed border-white/20 flex items-center justify-center">
+             <p class="text-[10px] font-bold uppercase tracking-widest text-white/40">Empty</p>
            </div>`
       }
     </div>
@@ -92,19 +93,6 @@ export function renderKanban(navigate, leads = []) {
             </button>
           </div>
         </section>
-
-        <!-- Filter panel -->
-        <div id="kanban-filter-panel" class="hidden max-w-7xl mx-auto px-6 mb-4">
-          <div class="card rounded-2xl p-4 flex gap-4 flex-wrap">
-            ${[['Category',['All','Philanthropy','Investors']],['Priority',['All','Critical','High','Medium','Low']],['Region',['All','Australia']]].map(([label,opts]) => `
-            <div class="flex flex-col gap-1">
-              <label class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost">${label}</label>
-              <select class="bg-surface-low border border-border-soft rounded-xl px-3 py-2 text-sm text-ink-mid focus:outline-none focus:ring-2 focus:ring-forest/20">
-                ${opts.map(o=>`<option>${o}</option>`).join('')}
-              </select>
-            </div>`).join('')}
-          </div>
-        </div>
 
         <!-- Kanban board -->
         <div class="px-6 overflow-x-auto pb-12">

@@ -1,4 +1,4 @@
-import { navHTML } from './dashboard.js';
+import { navHTML, stageColourClass } from './dashboard.js';
 
 export function renderLeadDetail(lead, interactions = [], navigate, showInteractionModal) {
   if (!lead) return `
@@ -16,14 +16,7 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
   const isBoth = cats.includes('Philanthropy') && cats.includes('Investors');
   const categoryDisplay = isBoth ? 'Investor + Philanthropy' : (lead.category || '—');
 
-  const stageColour = (stage) => {
-    if (stage === 'Engaged')          return 'bg-canopy/10 text-canopy';
-    if (stage === 'Contacted')        return 'bg-meadow text-forest';
-    if (stage === 'Meeting Set' || stage === 'Proposal Sent') return 'bg-amber-50 text-amber-700';
-    if (stage === 'Awaiting Response') return 'bg-amber-50 text-amber-700';
-    if (stage === 'Parked' || stage === 'Closed') return 'bg-surface-mid text-ink-ghost';
-    return 'bg-surface-mid text-ink-soft';
-  };
+  const stageColour = stageColourClass;
 
   // Card background + text — changes with pipeline stage
   const cardStyle = (stage) => {

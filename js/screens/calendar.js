@@ -1,17 +1,17 @@
 import { navHTML } from './dashboard.js';
 
 const PRIORITY_COLOUR = {
-  High:     { dot: '#8a3a3a', badge: 'bg-error/10 text-error',     border: 'border-l-error' },
-  Critical: { dot: '#8a3a3a', badge: 'bg-error/10 text-error',     border: 'border-l-error' },
-  Medium:   { dot: '#3d8b63', badge: 'bg-canopy-light text-canopy',border: 'border-l-canopy' },
-  Low:      { dot: '#c8d8c4', badge: 'bg-meadow text-forest',      border: 'border-l-meadow-mid' },
+  High:     { dot: '#8a3a3a', badge: 'bg-error/10 text-error',     glass: 'priority-glass-high' },
+  Critical: { dot: '#8a3a3a', badge: 'bg-error/10 text-error',     glass: 'priority-glass-high' },
+  Medium:   { dot: '#3d8b63', badge: 'bg-stage-warm-bg text-stage-warm', glass: 'priority-glass-medium' },
+  Low:      { dot: '#c8d8c4', badge: 'bg-stage-pipeline-bg text-stage-pipeline', glass: 'priority-glass-low' },
 };
 const pc = (p) => PRIORITY_COLOUR[p] || PRIORITY_COLOUR['Medium'];
 
 // Category colour for calendar dots
 const catColour = (lead) => {
   const cat = (lead?.category || '').toLowerCase();
-  if (cat.includes('philanthropy') && cat.includes('investor')) return { bg: 'bg-copper', ring: 'ring-canopy' };   // both
+  if (cat.includes('philanthropy') && cat.includes('investor')) return { bg: 'bg-copper', ring: 'ring-canopy' };
   if (cat.includes('philanthropy')) return { bg: 'bg-copper' };
   return { bg: 'bg-canopy' };
 };
@@ -46,7 +46,6 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
   const totalPending = overdue.length + todayItems.length + thisWeek.length + upcoming.length;
 
   // ── Calendar grid data ──────────────────────────────
-  // Build a lookup: "YYYY-MM-DD" → array of items
   const dateMap = {};
   items.forEach(item => {
     const key = item.follow_up_date;
@@ -54,32 +53,25 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
     dateMap[key].push(item);
   });
 
-  // We'll render the current month by default, with JS to navigate
   const calMonth = today.getMonth();
   const calYear = today.getFullYear();
 
-  // Generate calendar HTML for a given month/year
   function calendarGrid(year, month) {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startDow = firstDay.getDay(); // 0=Sun
+    const startDow = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
-    const monthName = firstDay.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
 
     let cells = '';
-
-    // Empty cells before first day
     for (let i = 0; i < startDow; i++) {
       cells += `<div class="h-20 md:h-24"></div>`;
     }
 
-    // Day cells
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const dayItems = dateMap[dateStr] || [];
       const isToday = (d === today.getDate() && month === today.getMonth() && year === today.getFullYear());
       const hasOverdue = dayItems.some(i => !i.completed && i.diffDays < 0);
-      const hasPending = dayItems.some(i => !i.completed);
 
       const dayNumClass = isToday
         ? 'w-7 h-7 rounded-full bg-forest text-white flex items-center justify-center text-xs font-bold'
@@ -87,7 +79,6 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
 
       const cellBorder = isToday ? 'border-forest/30 bg-canopy-light/30' : hasOverdue ? 'border-error/20 bg-error-bg/30' : 'border-transparent';
 
-      // Show up to 3 dots for tasks on this day
       const dots = dayItems.slice(0, 3).map(item => {
         const cc = catColour(item.lead);
         const completed = item.completed;
@@ -96,8 +87,8 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
 
       const overflow = dayItems.length > 3 ? `<span class="text-[9px] text-ink-ghost font-bold">+${dayItems.length - 3}</span>` : '';
 
-      // Clickable — show first task's lead
-      const onclick = dayItems.length > 0 ? `onclick="document.getElementById('cal-day-${dateStr}')?.scrollIntoView({behavior:'smooth', block:'center'})"` : '';
+      // Click to filter task list by date
+      const onclick = dayItems.length > 0 ? `onclick="window.app._calFilterDate && window.app._calFilterDate('${dateStr}')"` : '';
 
       cells += `
         <div class="h-20 md:h-24 p-1.5 border ${cellBorder} rounded-lg ${dayItems.length > 0 ? 'cursor-pointer hover:bg-surface-low' : ''} transition-colors" ${onclick}>
@@ -106,10 +97,10 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
         </div>`;
     }
 
-    return { monthName, cells };
+    return cells;
   }
 
-  // Pre-render 3 months: prev, current, next
+  // Pre-render 4 months: prev, current, next, next+1
   const months = [];
   for (let offset = -1; offset <= 2; offset++) {
     const m = new Date(calYear, calMonth + offset, 1);
@@ -117,7 +108,7 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
   }
 
   const calGrids = months.map(({ year, month, id }) => {
-    const { monthName, cells } = calendarGrid(year, month);
+    const cells = calendarGrid(year, month);
     const isCurrent = (year === calYear && month === calMonth);
     return `
     <div id="${id}" class="${isCurrent ? '' : 'hidden'}" data-cal-grid data-year="${year}" data-month="${month}">
@@ -130,14 +121,14 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
     </div>`;
   }).join('');
 
-  // Task card renderer
-  const card = (item) => {
+  // Task card renderer — using priority glass tints
+  const card = (item, extraClass = '') => {
     const p = item.lead?.priority || 'Medium';
     const pNorm = p === 'Critical' ? 'High' : p;
     const colours = pc(p);
     const dateStr = item.follow_up_date;
     return `
-    <div id="cal-day-${dateStr}" class="card rounded-xl p-4 border-l-4 ${colours.border} flex items-start gap-4 group">
+    <div data-cal-task data-task-date="${dateStr}" class="card rounded-xl p-4 ${colours.glass} flex items-start gap-4 group ${extraClass}">
       <div class="shrink-0 mt-0.5">
         <div class="w-5 h-5 rounded-full border-2 border-border cursor-pointer flex items-center justify-center hover:border-forest transition-colors ${item.completed ? 'bg-forest border-forest' : ''}"
           onclick="(async function(){
@@ -170,17 +161,29 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
   const bucket = (title, icon, items, emptyMsg, accent = '') => {
     if (items.length === 0 && !emptyMsg) return '';
     return `
-    <div class="mb-8">
+    <div class="mb-8" data-cal-bucket>
       <div class="flex items-center gap-2 mb-4">
-        <span class="material-symbols-outlined text-base ${accent || 'text-ink-ghost'}">${icon}</span>
-        <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-lg font-semibold text-forest">${title}</h3>
-        ${items.length > 0 ? `<span class="px-2.5 py-0.5 bg-surface-low text-ink-soft text-xs font-bold rounded-full">${items.length}</span>` : ''}
+        <span class="material-symbols-outlined text-base ${accent || 'text-white/60'}">${icon}</span>
+        <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-lg font-semibold text-white drop-shadow-sm">${title}</h3>
+        ${items.length > 0 ? `<span class="px-2.5 py-0.5 text-white/80 text-xs font-bold rounded-full" style="background:rgba(255,255,255,0.15);">${items.length}</span>` : ''}
       </div>
       <div class="space-y-3">
-        ${items.length > 0 ? items.map(card).join('') : `<p class="text-sm text-ink-ghost italic pl-7">${emptyMsg}</p>`}
+        ${items.length > 0 ? items.map(i => card(i)).join('') : `<p class="text-sm text-white/50 italic pl-7">${emptyMsg}</p>`}
       </div>
     </div>`;
   };
+
+  // Date filter notice (hidden by default, shown when a date is clicked)
+  const filterNotice = `
+    <div id="cal-filter-notice" class="hidden mb-6 flex items-center justify-between px-4 py-3 rounded-xl" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.4);">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-forest text-base">filter_list</span>
+        <p class="text-sm font-semibold text-forest">Showing tasks for <span id="cal-filter-date-label"></span></p>
+      </div>
+      <button class="text-xs font-bold text-ink-soft hover:text-forest transition-colors cursor-pointer flex items-center gap-1" onclick="window.app._calClearFilter && window.app._calClearFilter()">
+        <span class="material-symbols-outlined text-sm">close</span> Show all
+      </button>
+    </div>`;
 
   return `
     <div class="min-h-screen pb-24 md:pb-0">
@@ -216,13 +219,13 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
                 <button id="cal-prev" class="w-9 h-9 rounded-lg bg-surface-low flex items-center justify-center text-ink-soft hover:text-forest hover:bg-surface-mid transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-lg">chevron_left</span>
                 </button>
-                <h3 id="cal-month-title" style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-forest">${months.find(m => m.year === calYear && m.month === calMonth) ? new Date(calYear, calMonth).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' }) : ''}</h3>
+                <h3 id="cal-month-title" style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-forest">${new Date(calYear, calMonth).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}</h3>
                 <button id="cal-next" class="w-9 h-9 rounded-lg bg-surface-low flex items-center justify-center text-ink-soft hover:text-forest hover:bg-surface-mid transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-lg">chevron_right</span>
                 </button>
               </div>
 
-              <!-- Calendar grids (toggled by JS) -->
+              <!-- Calendar grids -->
               ${calGrids}
 
               <!-- Legend -->
@@ -236,7 +239,7 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
                   <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Investors</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-forest text-white flex items-center justify-center text-[9px] font-bold">16</div>
+                  <div class="w-7 h-7 rounded-full bg-forest text-white flex items-center justify-center text-[9px] font-bold">${today.getDate()}</div>
                   <span class="text-[10px] font-bold uppercase tracking-wider text-ink-ghost">Today</span>
                 </div>
               </div>
@@ -244,19 +247,20 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
           </div>
 
           <!-- Task list panel -->
-          <div class="lg:col-span-5">
+          <div class="lg:col-span-5" id="cal-task-panel">
+            ${filterNotice}
             ${overdue.length > 0 ? bucket('Overdue', 'warning', overdue, '', 'text-error') : ''}
             ${bucket('Today', 'today', todayItems, 'Nothing due today', 'text-canopy')}
             ${bucket('This Week', 'date_range', thisWeek, 'Nothing else this week')}
             ${upcoming.length > 0 ? bucket('Upcoming', 'event', upcoming, '') : ''}
             ${done.length > 0 ? `
             <details class="mt-8">
-              <summary class="flex items-center gap-2 cursor-pointer text-ink-ghost hover:text-forest transition-colors mb-4">
+              <summary class="flex items-center gap-2 cursor-pointer text-white/50 hover:text-white transition-colors mb-4">
                 <span class="material-symbols-outlined text-base">check_circle</span>
                 <span class="text-sm font-bold uppercase tracking-wider">Completed (${done.length})</span>
               </summary>
               <div class="space-y-3 opacity-60">
-                ${done.map(card).join('')}
+                ${done.map(i => card(i)).join('')}
               </div>
             </details>` : ''}
 
@@ -265,8 +269,8 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
               <div class="w-14 h-14 rounded-2xl bg-canopy-light flex items-center justify-center mx-auto mb-4">
                 <span class="material-symbols-outlined text-canopy text-2xl" style="font-variation-settings:'FILL' 1;">sentiment_satisfied</span>
               </div>
-              <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-forest mb-2">You're all caught up</h3>
-              <p class="text-ink-soft text-sm mb-5">Log interactions and set follow-up dates to see tasks here.</p>
+              <h3 style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-white drop-shadow-sm mb-2">You're all caught up</h3>
+              <p class="text-white/60 text-sm mb-5">Log interactions and set follow-up dates to see tasks here.</p>
               <button class="btn-primary px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer" onclick="window.app.navigate('#leads')">View All Leads</button>
             </div>` : ''}
           </div>
@@ -298,36 +302,68 @@ export function renderCalendar(navigate, followUps = [], leads = []) {
         </a>
       </nav>
     </div>
-
-    <script>
-    // Calendar month navigation
-    (function(){
-      const grids = document.querySelectorAll('[data-cal-grid]');
-      const title = document.getElementById('cal-month-title');
-      const prevBtn = document.getElementById('cal-prev');
-      const nextBtn = document.getElementById('cal-next');
-      if (!grids.length || !title || !prevBtn || !nextBtn) return;
-
-      let currentIdx = Array.from(grids).findIndex(g => !g.classList.contains('hidden'));
-      if (currentIdx === -1) currentIdx = 0;
-
-      function show(idx) {
-        grids.forEach(g => g.classList.add('hidden'));
-        if (grids[idx]) {
-          grids[idx].classList.remove('hidden');
-          const y = grids[idx].dataset.year;
-          const m = grids[idx].dataset.month;
-          title.textContent = new Date(y, m).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
-        }
-        currentIdx = idx;
-        prevBtn.style.visibility = idx <= 0 ? 'hidden' : 'visible';
-        nextBtn.style.visibility = idx >= grids.length - 1 ? 'hidden' : 'visible';
-      }
-
-      prevBtn.addEventListener('click', () => { if (currentIdx > 0) show(currentIdx - 1); });
-      nextBtn.addEventListener('click', () => { if (currentIdx < grids.length - 1) show(currentIdx + 1); });
-      show(currentIdx);
-    })();
-    </script>
   `;
+}
+
+// Post-render setup — called from app.js after innerHTML is set
+export function initCalendarControls() {
+  const grids = document.querySelectorAll('[data-cal-grid]');
+  const title = document.getElementById('cal-month-title');
+  const prevBtn = document.getElementById('cal-prev');
+  const nextBtn = document.getElementById('cal-next');
+  if (!grids.length || !title || !prevBtn || !nextBtn) return;
+
+  let currentIdx = Array.from(grids).findIndex(g => !g.classList.contains('hidden'));
+  if (currentIdx === -1) currentIdx = 0;
+
+  function show(idx) {
+    grids.forEach(g => g.classList.add('hidden'));
+    if (grids[idx]) {
+      grids[idx].classList.remove('hidden');
+      const y = grids[idx].dataset.year;
+      const m = grids[idx].dataset.month;
+      title.textContent = new Date(y, m).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+    }
+    currentIdx = idx;
+    prevBtn.style.visibility = idx <= 0 ? 'hidden' : 'visible';
+    nextBtn.style.visibility = idx >= grids.length - 1 ? 'hidden' : 'visible';
+  }
+
+  prevBtn.addEventListener('click', () => { if (currentIdx > 0) show(currentIdx - 1); });
+  nextBtn.addEventListener('click', () => { if (currentIdx < grids.length - 1) show(currentIdx + 1); });
+  show(currentIdx);
+
+  // Date click filtering
+  window.app._calFilterDate = function(dateStr) {
+    const notice = document.getElementById('cal-filter-notice');
+    const label = document.getElementById('cal-filter-date-label');
+    const tasks = document.querySelectorAll('[data-cal-task]');
+    const buckets = document.querySelectorAll('[data-cal-bucket]');
+
+    if (notice) notice.classList.remove('hidden');
+    if (label) {
+      const d = new Date(dateStr + 'T00:00:00');
+      label.textContent = d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+
+    // Hide all buckets first, show only matching tasks
+    buckets.forEach(b => b.style.display = 'none');
+    tasks.forEach(t => {
+      if (t.dataset.taskDate === dateStr) {
+        t.style.display = '';
+        // Make sure parent bucket is visible
+        const parentBucket = t.closest('[data-cal-bucket]');
+        if (parentBucket) parentBucket.style.display = '';
+      } else {
+        t.style.display = 'none';
+      }
+    });
+  };
+
+  window.app._calClearFilter = function() {
+    const notice = document.getElementById('cal-filter-notice');
+    if (notice) notice.classList.add('hidden');
+    document.querySelectorAll('[data-cal-task]').forEach(t => t.style.display = '');
+    document.querySelectorAll('[data-cal-bucket]').forEach(b => b.style.display = '');
+  };
 }
