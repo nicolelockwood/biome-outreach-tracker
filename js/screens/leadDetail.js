@@ -17,12 +17,24 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
   const categoryDisplay = isBoth ? 'Investor + Philanthropy' : (lead.category || '—');
 
   const stageColour = (stage) => {
-    if (stage === 'Engaged')   return 'bg-canopy/10 text-canopy';
-    if (stage === 'Contacted') return 'bg-meadow text-forest';
-    if (stage === 'Meeting Set' || stage === 'Proposal Sent') return 'bg-warning-bg text-warning';
+    if (stage === 'Engaged')          return 'bg-canopy/10 text-canopy';
+    if (stage === 'Contacted')        return 'bg-meadow text-forest';
+    if (stage === 'Meeting Set' || stage === 'Proposal Sent') return 'bg-amber-50 text-amber-700';
+    if (stage === 'Awaiting Response') return 'bg-amber-50 text-amber-700';
     if (stage === 'Parked' || stage === 'Closed') return 'bg-surface-mid text-ink-ghost';
     return 'bg-surface-mid text-ink-soft';
   };
+
+  // Card background + text — changes with pipeline stage
+  const cardStyle = (stage) => {
+    if (stage === 'Engaged')          return { bg: '#00c566', text: '#fff', subtext: 'rgba(255,255,255,0.65)', icon: 'rgba(255,255,255,0.15)' };
+    if (stage === 'Meeting Set')      return { bg: '#92400e', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
+    if (stage === 'Proposal Sent')    return { bg: '#0d3320', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
+    if (stage === 'Awaiting Response')return { bg: '#b45309', text: '#fff', subtext: 'rgba(255,255,255,0.6)',  icon: 'rgba(255,255,255,0.12)' };
+    if (stage === 'Parked')           return { bg: '#374151', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
+    return                                   { bg: '#1a3d2b', text: '#fff', subtext: 'rgba(255,255,255,0.5)',  icon: 'rgba(255,255,255,0.1)'  };
+  };
+  const cs = cardStyle(lead.stage);
 
   return `
     <div class="min-h-screen bg-white pb-24 md:pb-0">
@@ -91,16 +103,17 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               </div>
             </section>
 
-            <!-- Ticket / value card -->
-            <div class="rounded-2xl p-8 bg-forest text-white flex flex-col gap-4 relative overflow-hidden">
-              <div class="absolute right-6 top-6 opacity-10">
-                <span class="material-symbols-outlined text-8xl">${isPhil ? 'volunteer_activism' : 'payments'}</span>
+            <!-- Ticket / value card — colour reflects pipeline stage -->
+            <div class="rounded-2xl p-8 flex flex-col gap-4 relative overflow-hidden transition-colors duration-500"
+              style="background:${cs.bg}; color:${cs.text};">
+              <div class="absolute right-6 top-6" style="color:${cs.icon}; font-size:6rem; line-height:1;">
+                <span class="material-symbols-outlined" style="font-size:inherit;">${isPhil ? 'volunteer_activism' : 'payments'}</span>
               </div>
-              <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">${isBoth ? 'Investment & Engagement' : isPhil ? 'Engagement Details' : 'Investment Value'}</p>
-              <p class="text-4xl font-bold text-white leading-tight" style="font-family:'Fraunces',Georgia,serif;">${lead.ticket_size || 'TBC'}</p>
-              <div class="flex items-center gap-3 mt-2">
-                <span class="px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase text-white/70">${lead.priority || 'Medium'} priority</span>
-                <span class="material-symbols-outlined text-canopy text-base" style="font-variation-settings:'FILL' 1;">trending_up</span>
+              <p class="text-[10px] font-bold uppercase tracking-[0.12em]" style="color:${cs.subtext};">${isBoth ? 'Investment & Engagement' : isPhil ? 'Engagement Details' : 'Investment Value'}</p>
+              <p class="text-4xl font-bold leading-tight" style="font-family:'Fraunces',Georgia,serif;">${lead.ticket_size || 'TBC'}</p>
+              <div class="flex items-center gap-3 mt-1 flex-wrap">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase" style="background:rgba(255,255,255,0.15); color:${cs.text};">${lead.stage}</span>
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase" style="background:rgba(255,255,255,0.1); color:${cs.subtext};">${lead.priority === 'Critical' ? 'High' : lead.priority || 'Medium'} priority</span>
               </div>
             </div>
 
@@ -129,7 +142,11 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
                       <span class="text-[9px] text-ink-soft font-bold uppercase px-2 py-0.5 border border-border rounded-full">Outcome: ${int.outcome}</span>
                     </div>
                     <p class="text-sm text-ink-mid leading-relaxed">${int.summary}</p>
-                    ${int.follow_up_date ? `<p class="text-xs text-ink-ghost mt-2">Follow-up: ${int.follow_up_date}</p>` : ''}
+                    ${(int.follow_up_action || int.follow_up_date) ? `
+                    <div class="mt-3 pt-3 border-t border-border-soft flex flex-wrap gap-4">
+                      ${int.follow_up_action ? `<p class="text-xs text-forest font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-xs">task_alt</span>${int.follow_up_action}</p>` : ''}
+                      ${int.follow_up_date ? `<p class="text-xs text-ink-ghost flex items-center gap-1"><span class="material-symbols-outlined text-xs">calendar_today</span>${int.follow_up_date}</p>` : ''}
+                    </div>` : ''}
                   </div>
                 </div>
                 `).join('') : `

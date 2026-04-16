@@ -1,28 +1,74 @@
 import { navHTML } from './dashboard.js';
 
+// Shared filter logic — stored as a string so it can be called from any filter's onchange/oninput
+const FILTER_FN = `(function(){
+  var search = (document.getElementById('filter-search')?.value || '').toLowerCase();
+  var stage = document.getElementById('filter-stage')?.value || '';
+  var priority = document.getElementById('filter-priority')?.value || '';
+  var category = document.getElementById('filter-category')?.value || '';
+  var region = document.getElementById('filter-region')?.value || '';
+  var rows = document.querySelectorAll('.lead-row');
+  var shown = 0;
+  rows.forEach(function(row){
+    var org = (row.dataset.org || '').toLowerCase();
+    var contact = (row.dataset.contact || '').toLowerCase();
+    var rStage = row.dataset.stage || '';
+    var rPriority = row.dataset.priority || '';
+    var rCategory = row.dataset.category || '';
+    var rRegion = row.dataset.region || '';
+    var normPriority = (rPriority === 'Critical') ? 'High' : rPriority;
+    var matchSearch   = !search   || org.includes(search) || contact.includes(search);
+    var matchStage    = !stage    || stage === 'all'    || rStage === stage;
+    var matchPriority = !priority || priority === 'all' || normPriority === priority;
+    var matchCategory = !category || category === 'all' || rCategory.split(',').includes(category);
+    var matchRegion   = !region   || region === 'all'   || rRegion === region;
+    var visible = matchSearch && matchStage && matchPriority && matchCategory && matchRegion;
+    row.style.display = visible ? '' : 'none';
+    if(visible) shown++;
+  });
+  var counter = document.getElementById('leads-shown');
+  if(counter) counter.textContent = shown;
+})()`;
+
 export function renderLeads(navigate, leads = []) {
   const priorityDot = (p) => {
-    if (p === 'Critical') return '<span class="inline-block w-2 h-2 rounded-full bg-error dot-critical"></span>';
-    if (p === 'High')     return '<span class="inline-block w-2 h-2 rounded-full bg-canopy"></span>';
-    if (p === 'Medium')   return '<span class="inline-block w-2 h-2 rounded-full bg-warning"></span>';
-    return '<span class="inline-block w-2 h-2 rounded-full bg-border"></span>';
+    const norm = (p === 'Critical') ? 'High' : p;
+    if (norm === 'High')   return '<span class="inline-block w-2 h-2 rounded-full bg-error"></span>';
+    if (norm === 'Medium') return '<span class="inline-block w-2 h-2 rounded-full bg-canopy"></span>';
+    return '<span class="inline-block w-2 h-2 rounded-full bg-meadow-mid border border-border-soft"></span>';
   };
 
   const stageColour = (stage) => {
     if (stage === 'Engaged')          return 'bg-canopy/10 text-canopy';
     if (stage === 'Contacted')        return 'bg-meadow text-forest';
-    if (stage === 'Meeting Set' || stage === 'Proposal Sent') return 'bg-warning-bg text-warning';
-    if (stage === 'Awaiting Response') return 'bg-warning-bg text-warning';
+    if (stage === 'Meeting Set' || stage === 'Proposal Sent') return 'bg-amber-50 text-amber-700';
+    if (stage === 'Awaiting Response') return 'bg-amber-50 text-amber-700';
     if (stage === 'Parked' || stage === 'Closed') return 'bg-surface-mid text-ink-ghost';
     return 'bg-surface-mid text-ink-soft';
   };
 
+  const cats = (lead) => (lead.category || '').split(',').map(c => c.trim());
+  const catLabel = (lead) => {
+    const c = cats(lead);
+    if (c.includes('Investors') && c.includes('Philanthropy')) return 'Both';
+    return lead.category || '—';
+  };
+
+  const priorityDisplay = (p) => (p === 'Critical') ? 'High' : (p || '—');
+
   const leadsHtml = leads.map(lead => `
-    <tr class="lead-row border-b border-border-soft cursor-pointer" onclick="window.app.navigate('#lead/${lead.id}')">
+    <tr class="lead-row border-b border-border-soft cursor-pointer hover:bg-surface-low transition-colors"
+      data-org="${(lead.org_name || '').replace(/"/g,'&quot;').toLowerCase()}"
+      data-contact="${(lead.contact_name || '').replace(/"/g,'&quot;').toLowerCase()}"
+      data-stage="${lead.stage || ''}"
+      data-priority="${lead.priority || ''}"
+      data-category="${lead.category || ''}"
+      data-region="${lead.region || ''}"
+      onclick="window.app.navigate('#lead/${lead.id}')">
       <td class="py-5 px-6">
         <div>
           <p class="font-semibold text-forest text-sm leading-snug">${lead.org_name}</p>
-          <p class="text-xs text-ink-ghost mt-0.5">${lead.region || 'Australia'} · ${lead.category}</p>
+          <p class="text-xs text-ink-ghost mt-0.5">${lead.region || 'Australia'} · ${catLabel(lead)}</p>
         </div>
       </td>
       <td class="py-5 px-6">
@@ -40,14 +86,14 @@ export function renderLeads(navigate, leads = []) {
       <td class="py-5 px-6">
         <div class="flex items-center gap-2">
           ${priorityDot(lead.priority)}
-          <span class="text-sm text-ink-mid">${lead.priority || '—'}</span>
+          <span class="text-sm text-ink-mid">${priorityDisplay(lead.priority)}</span>
         </div>
       </td>
       <td class="py-5 px-6">
         <span class="text-sm font-semibold text-forest">${lead.ticket_size || '—'}</span>
       </td>
       <td class="py-5 px-6 text-right">
-        <span class="material-symbols-outlined text-ink-ghost group-hover:text-forest text-base transition-colors">chevron_right</span>
+        <span class="material-symbols-outlined text-ink-ghost text-base">chevron_right</span>
       </td>
     </tr>
   `).join('');
@@ -67,7 +113,7 @@ export function renderLeads(navigate, leads = []) {
               Your complete pipeline — <strong class="text-ink-mid font-semibold">${leads.length} organisation${leads.length !== 1 ? 's' : ''}</strong> across all stages and categories.
             </p>
           </div>
-          <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shrink-0 self-start md:self-auto" onclick="window.app.navigate('#add-lead')">
+          <button class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shrink-0 self-start md:self-auto cursor-pointer" onclick="window.app.navigate('#add-lead')">
             <span class="material-symbols-outlined text-base">add</span>
             New Lead
           </button>
@@ -75,22 +121,83 @@ export function renderLeads(navigate, leads = []) {
 
         <!-- Filters -->
         <section class="mb-8 p-5 bg-surface-low rounded-2xl border border-border-soft">
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            ${[
-              ['Category',    ['All Categories', 'Philanthropy', 'Investors']],
-              ['Stage',       ['All Stages', 'New', 'Contacted', 'Engaged', 'Meeting Set', 'Proposal Sent', 'Parked']],
-              ['Priority',    ['All Priorities', 'Critical', 'High', 'Medium', 'Low']],
-              ['Owner',       ['All Owners', 'Nicole']],
-              ['Ticket Size', ['Any Range', 'A$1M–A$10M', 'A$10M+']],
-              ['Tags',        ['All Tags', 'Warm Intro', 'Direct Outreach', 'Cold Outreach']],
-            ].map(([label, opts]) => `
+          <!-- Search row -->
+          <div class="relative mb-4">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-ghost text-base pointer-events-none">search</span>
+            <input id="filter-search" type="text" placeholder="Search by organisation or contact name…"
+              class="w-full bg-white border border-border-soft rounded-xl pl-11 pr-4 py-3 text-sm text-ink focus:ring-2 focus:ring-forest/20 focus:outline-none transition-all placeholder:text-ink-ghost"
+              oninput="${FILTER_FN}"/>
+          </div>
+          <!-- Dropdowns row -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="flex flex-col gap-1.5">
-              <label class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost px-1">${label}</label>
-              <select class="w-full bg-white border border-border-soft rounded-xl py-2.5 px-3 text-sm text-ink-mid appearance-none focus:ring-2 focus:ring-forest/20 focus:outline-none cursor-pointer">
-                ${opts.map(o => `<option>${o}</option>`).join('')}
-              </select>
+              <label class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost px-1">Stage</label>
+              <div class="relative">
+                <select id="filter-stage" class="w-full appearance-none bg-white border border-border-soft rounded-xl py-2.5 px-3 pr-8 text-sm text-ink-mid focus:ring-2 focus:ring-forest/20 focus:outline-none cursor-pointer"
+                  onchange="${FILTER_FN}">
+                  <option value="all">All Stages</option>
+                  <option value="New">New</option>
+                  <option value="Contacted">Contacted</option>
+                  <option value="Engaged">Engaged</option>
+                  <option value="Meeting Set">Meeting Set</option>
+                  <option value="Proposal Sent">Proposal Sent</option>
+                  <option value="Awaiting Response">Awaiting Response</option>
+                  <option value="Parked">Parked</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-ghost text-base pointer-events-none">expand_more</span>
+              </div>
             </div>
-            `).join('')}
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost px-1">Priority</label>
+              <div class="relative">
+                <select id="filter-priority" class="w-full appearance-none bg-white border border-border-soft rounded-xl py-2.5 px-3 pr-8 text-sm text-ink-mid focus:ring-2 focus:ring-forest/20 focus:outline-none cursor-pointer"
+                  onchange="${FILTER_FN}">
+                  <option value="all">All Priorities</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-ghost text-base pointer-events-none">expand_more</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost px-1">Category</label>
+              <div class="relative">
+                <select id="filter-category" class="w-full appearance-none bg-white border border-border-soft rounded-xl py-2.5 px-3 pr-8 text-sm text-ink-mid focus:ring-2 focus:ring-forest/20 focus:outline-none cursor-pointer"
+                  onchange="${FILTER_FN}">
+                  <option value="all">All Categories</option>
+                  <option value="Investors">Investors</option>
+                  <option value="Philanthropy">Philanthropy</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-ghost text-base pointer-events-none">expand_more</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost px-1">Region</label>
+              <div class="relative">
+                <select id="filter-region" class="w-full appearance-none bg-white border border-border-soft rounded-xl py-2.5 px-3 pr-8 text-sm text-ink-mid focus:ring-2 focus:ring-forest/20 focus:outline-none cursor-pointer"
+                  onchange="${FILTER_FN}">
+                  <option value="all">All Regions</option>
+                  <option value="Australia">Australia</option>
+                  <option value="New Zealand">New Zealand</option>
+                  <option value="UK">UK</option>
+                  <option value="US">US</option>
+                  <option value="Europe">Europe</option>
+                  <option value="Asia">Asia</option>
+                  <option value="International">International</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-ghost text-base pointer-events-none">expand_more</span>
+              </div>
+            </div>
+          </div>
+          <!-- Clear button -->
+          <div class="mt-4 flex justify-end">
+            <button class="text-[11px] font-bold uppercase tracking-wider text-ink-ghost hover:text-forest transition-colors cursor-pointer flex items-center gap-1"
+              type="button"
+              onclick="document.getElementById('filter-search').value='';['filter-stage','filter-priority','filter-category','filter-region'].forEach(id=>{var el=document.getElementById(id);if(el)el.selectedIndex=0});${FILTER_FN}">
+              <span class="material-symbols-outlined text-sm">close</span>
+              Clear filters
+            </button>
           </div>
         </section>
 
@@ -104,25 +211,18 @@ export function renderLeads(navigate, leads = []) {
                   <th class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost">Contact</th>
                   <th class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost">Stage</th>
                   <th class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost">Priority</th>
-                  <th class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost">Ticket Size</th>
+                  <th class="py-4 px-6 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-ghost">Target Ask</th>
                   <th class="py-4 px-6"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="leads-tbody">
                 ${leadsHtml || `<tr><td colspan="6" class="py-16 text-center text-ink-ghost text-sm">No leads yet — add your first one</td></tr>`}
               </tbody>
             </table>
           </div>
           <div class="px-6 py-4 border-t border-border-soft flex justify-between items-center bg-surface-low">
-            <p class="text-sm text-ink-ghost">Showing <strong class="text-ink-mid">${leads.length}</strong> lead${leads.length !== 1 ? 's' : ''}</p>
-            <div class="flex gap-2">
-              <button class="w-9 h-9 rounded-xl border border-border-soft bg-white flex items-center justify-center text-ink-ghost disabled:opacity-40" disabled>
-                <span class="material-symbols-outlined text-base">chevron_left</span>
-              </button>
-              <button class="w-9 h-9 rounded-xl border border-border-soft bg-white flex items-center justify-center text-forest hover:bg-surface-low">
-                <span class="material-symbols-outlined text-base">chevron_right</span>
-              </button>
-            </div>
+            <p class="text-sm text-ink-ghost">Showing <strong id="leads-shown" class="text-ink-mid">${leads.length}</strong> lead${leads.length !== 1 ? 's' : ''}</p>
+            <button class="text-xs font-bold uppercase tracking-wider text-ink-ghost hover:text-forest transition-colors cursor-pointer" onclick="window.app.navigate('#add-lead')">+ Add Lead</button>
           </div>
         </section>
       </main>
