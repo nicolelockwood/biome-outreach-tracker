@@ -7,9 +7,10 @@ import { renderAddLead } from './screens/addLead.js';
 import { renderEditLead } from './screens/editLead.js';
 import { renderCalendar } from './screens/calendar.js';
 import { renderStrategy } from './screens/strategy.js';
+import { renderArchive } from './screens/archive.js';
 import { renderInteractionModal } from './screens/interactionModal.js';
 import { renderImportLeads, renderExportData, renderNotifications, renderTeamManagement } from './screens/placeholders.js';
-import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, getAllInteractions, updateInteraction } from './supabase.js';
+import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, getAllInteractions, getAllInteractionsAll, updateInteraction } from './supabase.js';
 
 class App {
   constructor() {
@@ -225,6 +226,10 @@ class App {
       content = renderCalendar(this.navigate.bind(this), followUps, this.leads);
     } else if (hash === 'strategy') {
       content = renderStrategy(this.navigate.bind(this));
+    } else if (hash === 'archive') {
+      const securedLeads = this.leads.filter(l => l.stage === 'Secured');
+      const allInts = await getAllInteractionsAll();
+      content = renderArchive(this.navigate.bind(this), securedLeads, allInts);
     } else if (hash === 'import') {
       content = renderImportLeads();
     } else if (hash === 'export') {

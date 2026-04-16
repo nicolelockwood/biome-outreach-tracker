@@ -101,6 +101,15 @@ export async function getAllInteractions() {
   return data;
 }
 
+export async function getAllInteractionsAll() {
+  const { data, error } = await supabase
+    .from('interactions')
+    .select('*')
+    .order('date', { ascending: true });
+  if (error) { console.error('getAllInteractionsAll error:', error); return []; }
+  return data;
+}
+
 export async function updateInteraction(id, updates) {
   const { data, error } = await supabase
     .from('interactions')

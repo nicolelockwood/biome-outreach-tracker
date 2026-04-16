@@ -28,6 +28,7 @@ export function navHTML(active = 'dashboard') {
         ${link('leads', 'Leads', 'leads')}
         ${link('calendar', 'Follow-ups', 'calendar')}
         ${link('strategy', 'Strategy', 'strategy')}
+        ${link('archive', 'Archive', 'archive')}
       </nav>
 
       <!-- Right side -->
@@ -113,6 +114,27 @@ export function renderDashboard(navigate, leads = [], session = null) {
       ${navHTML('dashboard')}
 
       <main class="max-w-7xl mx-auto px-6 pt-10">
+
+        <!-- ── Overdue alert (shown only when there are overdue follow-ups from leads.next_follow_up) ── -->
+        ${(() => {
+          const today = new Date(); today.setHours(0,0,0,0);
+          const overdue = ls.filter(l => {
+            if (!l.next_follow_up || l.stage === 'Secured' || l.stage === 'Parked') return false;
+            try { const d = new Date(l.next_follow_up); d.setHours(0,0,0,0); return d < today; } catch { return false; }
+          });
+          if (overdue.length === 0) return '';
+          return `
+          <div class="mb-8 flex items-center gap-4 px-5 py-4 bg-error/5 border border-error/20 rounded-2xl cursor-pointer" onclick="window.app.navigate('#calendar')">
+            <span class="material-symbols-outlined text-error text-xl shrink-0">warning</span>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-error">
+                ${overdue.length} overdue follow-up${overdue.length > 1 ? 's' : ''} — ${overdue.map(l => l.org_name).slice(0,3).join(', ')}${overdue.length > 3 ? ` + ${overdue.length - 3} more` : ''}
+              </p>
+              <p class="text-xs text-error/70">Tap to view your follow-up task list →</p>
+            </div>
+            <span class="material-symbols-outlined text-error/50 text-base">chevron_right</span>
+          </div>`;
+        })()}
 
         <!-- ── Hero ──────────────────────────────────────── -->
         <section class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
