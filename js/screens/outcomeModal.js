@@ -48,26 +48,7 @@ export function renderOutcomeModal(leadId, currentStage) {
               <div class="flex items-center gap-3 pt-2">
                 <button id="outcome-save-btn" class="flex-1 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer text-white transition-all"
                   style="background: linear-gradient(135deg, #3d8b63, #14342a);"
-                  type="button" onclick="(async function(){
-                  const btn = document.getElementById('outcome-save-btn');
-                  const errEl = document.getElementById('outcome-error');
-                  errEl.classList.add('hidden');
-                  const stage = document.getElementById('outcome-stage').value;
-                  const note = document.getElementById('outcome-note').value.trim();
-                  btn.disabled = true;
-                  btn.innerHTML = '<span class=\\'inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin\\'></span>';
-                  const updates = { stage };
-                  if (note) updates.comments = note;
-                  const { data, error } = await window.app.updateLead(${leadId}, updates);
-                  if (error) {
-                    errEl.textContent = error.message || 'Failed to save. Please try again.';
-                    errEl.classList.remove('hidden');
-                    btn.disabled = false;
-                    btn.innerHTML = '<span class=\\'material-symbols-outlined text-sm\\'>verified</span> Confirm Outcome';
-                  } else {
-                    window.app.closeOutcomeModal();
-                  }
-                })()">
+                  type="button" onclick="window.handleSaveOutcome()">
                   <span class="material-symbols-outlined text-sm">verified</span>
                   Confirm Outcome
                 </button>

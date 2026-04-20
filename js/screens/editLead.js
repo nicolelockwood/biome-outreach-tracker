@@ -243,76 +243,7 @@ export function renderEditLead(lead, navigate) {
               <span class="material-symbols-outlined text-base">arrow_back</span>
               Cancel
             </button>
-            <button id="update-lead-btn" class="btn-primary px-8 py-3.5 rounded-xl font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button" onclick="(async function(){
-              const btn = document.getElementById('update-lead-btn');
-              const errEl = document.getElementById('edit-lead-error');
-              errEl.classList.add('hidden');
-
-              const orgName = document.getElementById('el-org-name')?.value?.trim();
-              const firstName = document.getElementById('el-first-name')?.value?.trim() || '';
-              const lastName = document.getElementById('el-last-name')?.value?.trim() || '';
-              const contactName = [firstName, lastName].filter(Boolean).join(' ');
-              const contactTitle = document.getElementById('el-title')?.value?.trim() || null;
-              const phone = document.getElementById('el-phone')?.value?.trim() || null;
-              const email = document.getElementById('el-email')?.value?.trim() || null;
-              const website = document.getElementById('el-website')?.value?.trim() || null;
-              const stage = document.getElementById('edit-lead-stage')?.value || '${lead.stage}';
-              const region = document.getElementById('edit-lead-region')?.value || 'Australia';
-              const ticketRaw = document.getElementById('el-ticket')?.value?.trim() || '';
-              const ticketSize = ticketRaw ? (ticketRaw.startsWith('$') ? ticketRaw : '$' + ticketRaw) : null;
-              const notes = document.getElementById('el-notes')?.value?.trim() || null;
-              const action = document.getElementById('el-action')?.value?.trim() || null;
-              const followUp = document.getElementById('el-followup')?.value?.trim() || null;
-
-              const activePriorityBtn = document.querySelector('.priority-btn.bg-forest') || document.querySelector('.priority-btn.bg-error') || document.querySelector('.priority-btn.bg-meadow');
-              const priority = activePriorityBtn?.dataset?.priority || '${lead.priority || 'Medium'}';
-
-              const checkedTypes = [...document.querySelectorAll('input[name=lead_type]:checked')].map(i => i.value);
-              if (checkedTypes.length === 0) {
-                errEl.textContent = 'Please select at least one lead type.';
-                errEl.classList.remove('hidden');
-                return;
-              }
-              const category = checkedTypes.join(',');
-
-              if (!orgName) {
-                errEl.textContent = 'Organisation name is required.';
-                errEl.classList.remove('hidden');
-                return;
-              }
-
-              btn.disabled = true;
-              btn.innerHTML = '<span class=\'inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin\'></span>';
-
-              const initials = contactName ? contactName.split(' ').map(n=>n[0]||'').join('').toUpperCase().slice(0,2) : (orgName.slice(0,2).toUpperCase());
-              const updates = {
-                org_name: orgName,
-                contact_name: contactName || null,
-                contact_initials: initials,
-                contact_title: contactTitle,
-                phone,
-                email,
-                website,
-                stage,
-                priority,
-                ticket_size: ticketSize,
-                category,
-                region,
-                comments: notes,
-                action,
-                next_follow_up: followUp
-              };
-
-              const { data, error } = await window.app.updateLead(${lead.id}, updates);
-              if (error) {
-                errEl.textContent = error.message || 'Failed to update lead. Please try again.';
-                errEl.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerHTML = '<span class=\'material-symbols-outlined text-sm\'>save</span> Save Changes';
-              } else {
-                window.app.navigate('#lead/${lead.id}');
-              }
-            })()">
+            <button id="update-lead-btn" class="btn-primary px-8 py-3.5 rounded-xl font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button" onclick="window.handleUpdateLead()">
               <span class="material-symbols-outlined text-sm">save</span>
               Save Changes
             </button>

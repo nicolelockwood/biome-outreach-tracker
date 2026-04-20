@@ -89,41 +89,7 @@ export function renderInteractionModal(leadId, onClose) {
 
             <!-- Actions -->
             <div class="flex items-center gap-3 pt-2">
-              <button id="int-save-btn" class="btn-primary flex-1 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer" type="button" onclick="(async function(){
-                const btn = document.getElementById('int-save-btn');
-                const errEl = document.getElementById('int-error');
-                errEl.classList.add('hidden');
-                const date = document.getElementById('int-date').value;
-                const type = document.getElementById('int-type').value;
-                const summary = document.getElementById('int-summary').value.trim();
-                const outcome = document.getElementById('int-outcome').value;
-                const followUpAction = document.getElementById('int-action').value.trim() || null;
-                const followUpDate = document.getElementById('int-followup').value || null;
-                if (!summary) {
-                  errEl.textContent = 'Please add a summary before saving.';
-                  errEl.classList.remove('hidden');
-                  return;
-                }
-                btn.disabled = true;
-                btn.innerHTML = '<span class=\'inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin\'></span>';
-                const { data, error } = await window.app.saveInteraction({
-                  lead_id: ${leadId},
-                  date,
-                  type,
-                  summary,
-                  outcome,
-                  follow_up_action: followUpAction,
-                  follow_up_date: followUpDate
-                });
-                if (error) {
-                  errEl.textContent = error.message || 'Failed to save. Please try again.';
-                  errEl.classList.remove('hidden');
-                  btn.disabled = false;
-                  btn.innerHTML = '<span class=\'material-symbols-outlined text-sm\'>add_circle</span> Record Interaction';
-                } else {
-                  window.app.closeInteractionModal();
-                }
-              })()">
+              <button id="int-save-btn" class="btn-primary flex-1 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer" type="button" onclick="window.handleSaveInteraction()">
                 <span class="material-symbols-outlined text-sm">add_circle</span>
                 Record Interaction
               </button>

@@ -22,6 +22,224 @@ class App {
     this.leads = [];
     this.session = null;
     window.app = this;
+    // Global save-lead handler — called from addLead form button
+    window.handleSaveLead = async () => {
+      const btn = document.getElementById('save-lead-btn');
+      const errEl = document.getElementById('add-lead-error');
+      if (!btn || !errEl) return;
+      errEl.classList.add('hidden');
+
+      const orgName = document.getElementById('al-org-name')?.value?.trim();
+      const firstName = document.getElementById('al-first-name')?.value?.trim() || '';
+      const lastName = document.getElementById('al-last-name')?.value?.trim() || '';
+      const contactName = [firstName, lastName].filter(Boolean).join(' ');
+      const contactTitle = document.getElementById('al-title')?.value?.trim() || null;
+      const phone = document.getElementById('al-phone')?.value?.trim() || null;
+      const email = document.getElementById('al-email')?.value?.trim() || null;
+      const website = document.getElementById('al-website')?.value?.trim() || null;
+      const stage = document.getElementById('add-lead-stage')?.value || 'New';
+      const region = document.getElementById('add-lead-region')?.value || 'Australia';
+      const ticketRaw = document.getElementById('al-ticket')?.value?.trim() || '';
+      const ticketSize = ticketRaw ? (ticketRaw.startsWith('$') ? ticketRaw : '$' + ticketRaw) : null;
+      const notes = document.getElementById('al-notes')?.value?.trim() || null;
+
+      const activePriorityBtn = document.querySelector('.priority-btn.bg-forest') || document.querySelector('.priority-btn.bg-error') || document.querySelector('.priority-btn.bg-meadow');
+      const priority = activePriorityBtn?.dataset?.priority || 'Medium';
+
+      const checkedTypes = [...document.querySelectorAll('input[name=lead_type]:checked')].map(i => i.value);
+      if (checkedTypes.length === 0) {
+        errEl.textContent = 'Please select at least one lead type.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const category = checkedTypes.join(',');
+
+      if (!orgName) {
+        errEl.textContent = 'Organisation name is required.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>';
+
+      const initials = contactName ? contactName.split(' ').map(n => n[0] || '').join('').toUpperCase().slice(0, 2) : (orgName.slice(0, 2).toUpperCase());
+      const leadData = {
+        org_name: orgName,
+        contact_name: contactName || null,
+        contact_initials: initials,
+        contact_title: contactTitle,
+        phone,
+        email,
+        website,
+        stage,
+        priority,
+        ticket_size: ticketSize,
+        category,
+        region,
+        comments: notes,
+        tags: []
+      };
+
+      const { data, error } = await window.app.saveNewLead(leadData);
+      if (error) {
+        errEl.textContent = error.message || 'Failed to save lead. Please try again.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> Initialize Lead';
+      } else {
+        window.app.navigate('#leads');
+      }
+    };
+
+    // Global save-interaction handler — called from interaction modal
+    window.handleSaveInteraction = async () => {
+      const btn = document.getElementById('int-save-btn');
+      const errEl = document.getElementById('int-error');
+      if (!btn || !errEl) return;
+      errEl.classList.add('hidden');
+
+      const date = document.getElementById('int-date')?.value;
+      const type = document.getElementById('int-type')?.value;
+      const summary = document.getElementById('int-summary')?.value?.trim();
+      const outcome = document.getElementById('int-outcome')?.value;
+      const followUpAction = document.getElementById('int-action')?.value?.trim() || null;
+      const followUpDate = document.getElementById('int-followup')?.value || null;
+
+      if (!summary) {
+        errEl.textContent = 'Please add a summary before saving.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>';
+
+      const { data, error } = await window.app.saveInteraction({
+        lead_id: window.app.currentLeadId,
+        date,
+        type,
+        summary,
+        outcome,
+        follow_up_action: followUpAction,
+        follow_up_date: followUpDate
+      });
+
+      if (error) {
+        errEl.textContent = error.message || 'Failed to save. Please try again.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">add_circle</span> Record Interaction';
+      } else {
+        window.app.closeInteractionModal();
+      }
+    };
+
+    // Global save-outcome handler — called from outcome modal
+    window.handleSaveOutcome = async () => {
+      const btn = document.getElementById('outcome-save-btn');
+      const errEl = document.getElementById('outcome-error');
+      if (!btn || !errEl) return;
+      errEl.classList.add('hidden');
+
+      const stage = document.getElementById('outcome-stage')?.value;
+      const note = document.getElementById('outcome-note')?.value?.trim();
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>';
+
+      const updates = { stage };
+      if (note) updates.comments = note;
+
+      const { data, error } = await window.app.updateLead(window.app.currentLeadId, updates);
+      if (error) {
+        errEl.textContent = error.message || 'Failed to save. Please try again.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">verified</span> Confirm Outcome';
+      } else {
+        window.app.closeOutcomeModal();
+      }
+    };
+
+    // Global update-lead handler — called from editLead form button
+    window.handleUpdateLead = async () => {
+      const btn = document.getElementById('update-lead-btn');
+      const errEl = document.getElementById('edit-lead-error');
+      if (!btn || !errEl) return;
+      errEl.classList.add('hidden');
+
+      // Get lead ID from current route hash
+      const hash = window.location.hash.slice(1);
+      const leadId = parseInt(hash.split('/')[1]);
+      if (isNaN(leadId)) return;
+
+      const orgName = document.getElementById('el-org-name')?.value?.trim();
+      const firstName = document.getElementById('el-first-name')?.value?.trim() || '';
+      const lastName = document.getElementById('el-last-name')?.value?.trim() || '';
+      const contactName = [firstName, lastName].filter(Boolean).join(' ');
+      const contactTitle = document.getElementById('el-title')?.value?.trim() || null;
+      const phone = document.getElementById('el-phone')?.value?.trim() || null;
+      const email = document.getElementById('el-email')?.value?.trim() || null;
+      const website = document.getElementById('el-website')?.value?.trim() || null;
+      const stage = document.getElementById('edit-lead-stage')?.value || 'New';
+      const region = document.getElementById('edit-lead-region')?.value || 'Australia';
+      const ticketRaw = document.getElementById('el-ticket')?.value?.trim() || '';
+      const ticketSize = ticketRaw ? (ticketRaw.startsWith('$') ? ticketRaw : '$' + ticketRaw) : null;
+      const notes = document.getElementById('el-notes')?.value?.trim() || null;
+      const action = document.getElementById('el-action')?.value?.trim() || null;
+      const followUp = document.getElementById('el-followup')?.value?.trim() || null;
+
+      const activePriorityBtn = document.querySelector('.priority-btn.bg-forest') || document.querySelector('.priority-btn.bg-error') || document.querySelector('.priority-btn.bg-meadow');
+      const priority = activePriorityBtn?.dataset?.priority || 'Medium';
+
+      const checkedTypes = [...document.querySelectorAll('input[name=lead_type]:checked')].map(i => i.value);
+      if (checkedTypes.length === 0) {
+        errEl.textContent = 'Please select at least one lead type.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const category = checkedTypes.join(',');
+
+      if (!orgName) {
+        errEl.textContent = 'Organisation name is required.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>';
+
+      const initials = contactName ? contactName.split(' ').map(n => n[0] || '').join('').toUpperCase().slice(0, 2) : (orgName.slice(0, 2).toUpperCase());
+      const updates = {
+        org_name: orgName,
+        contact_name: contactName || null,
+        contact_initials: initials,
+        contact_title: contactTitle,
+        phone,
+        email,
+        website,
+        stage,
+        priority,
+        ticket_size: ticketSize,
+        category,
+        region,
+        comments: notes,
+        action,
+        next_follow_up: followUp
+      };
+
+      const { data, error } = await window.app.updateLead(leadId, updates);
+      if (error) {
+        errEl.textContent = error.message || 'Failed to update lead. Please try again.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> Save Changes';
+      } else {
+        window.app.navigate('#lead/' + leadId);
+      }
+    };
+
     // Global sign-in handler â called directly from signin button
     window.handleSignIn = async () => {
       const btn = document.getElementById('signin-btn');
