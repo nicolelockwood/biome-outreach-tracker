@@ -97,28 +97,45 @@ class App {
 
   async saveNewLead(leadData) {
     const { data, error } = await createLead(leadData);
-    if (!error && data) {
-      this.leads.push(data);
+    if (error) {
+      console.error('saveNewLead failed:', error);
+    } else {
+      console.log('Lead saved successfully:', data?.id, data?.org_name);
+      // Force refresh from DB to ensure local state matches persisted state
+      await this.loadLeads();
     }
     return { data, error };
   }
 
   async saveInteraction(interactionData) {
     const { data, error } = await createInteraction(interactionData);
+    if (error) {
+      console.error('saveInteraction failed:', error);
+    } else {
+      console.log('Interaction saved:', data?.id);
+      // Refresh leads to pick up any follow_up_date changes
+      await this.loadLeads();
+    }
     return { data, error };
   }
 
   async updateLead(id, updates) {
     const { data, error } = await updateLead(id, updates);
-    if (!error && data) {
-      const idx = this.leads.findIndex(l => l.id === id);
-      if (idx !== -1) this.leads[idx] = data;
+    if (error) {
+      console.error('updateLead failed:', error);
+    } else {
+      console.log('Lead updated:', id, Object.keys(updates));
+      // Force refresh from DB — don't rely on local array splice
+      await this.loadLeads();
     }
     return { data, error };
   }
 
   async completeFollowUp(interactionId, completed = true) {
     const { data, error } = await updateInteraction(interactionId, { completed });
+    if (error) {
+      console.error('completeFollowUp failed:', error);
+    }
     return { data, error };
   }
 
