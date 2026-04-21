@@ -56,6 +56,9 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
             <p class="text-white/70 text-base">${lead.contact_title || 'Contact'} · ${lead.org_name}</p>
           </div>
           <div class="flex items-center gap-3 shrink-0 self-start">
+            <button class="flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm border-2 border-red-300/40 text-red-200 hover:bg-red-500/15 transition-all duration-200 cursor-pointer backdrop-blur-sm" onclick="window.handleDeleteLead(${lead.id})" title="Delete this lead permanently">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
             <button class="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-200 cursor-pointer backdrop-blur-sm" onclick="window.app.navigate('#edit-lead/${lead.id}')">
               <span class="material-symbols-outlined text-base">edit</span>
               Edit Lead

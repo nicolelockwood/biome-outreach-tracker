@@ -11,7 +11,7 @@ import { renderArchive } from './screens/archive.js';
 import { renderInteractionModal } from './screens/interactionModal.js';
 import { renderOutcomeModal } from './screens/outcomeModal.js';
 import { renderImportLeads, renderExportData, renderNotifications, renderTeamManagement } from './screens/placeholders.js';
-import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, getAllInteractions, getAllInteractionsAll, updateInteraction } from './supabase.js';
+import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, deleteLead, getAllInteractions, getAllInteractionsAll, updateInteraction } from './supabase.js';
 
 class App {
   constructor() {
@@ -240,6 +240,17 @@ class App {
       }
     };
 
+    // Global delete-lead handler — called from lead detail page
+    window.handleDeleteLead = async (leadId) => {
+      if (!confirm('Are you sure you want to permanently delete this lead and all its interactions? This cannot be undone.')) return;
+      const { error } = await window.app.removeLead(leadId);
+      if (error) {
+        alert('Failed to delete lead: ' + (error.message || 'Unknown error'));
+      } else {
+        window.app.navigate('#leads');
+      }
+    };
+
     // Global sign-in handler â called directly from signin button
     window.handleSignIn = async () => {
       const btn = document.getElementById('signin-btn');
@@ -355,6 +366,17 @@ class App {
       console.error('completeFollowUp failed:', error);
     }
     return { data, error };
+  }
+
+  async removeLead(id) {
+    const { error } = await deleteLead(id);
+    if (error) {
+      console.error('removeLead failed:', error);
+    } else {
+      console.log('Lead deleted:', id);
+      await this.loadLeads();
+    }
+    return { error };
   }
 
   showInteractionModal(leadId) {
