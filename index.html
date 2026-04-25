@@ -337,7 +337,67 @@
       box-shadow: 0 -4px 24px rgba(20,52,42,0.10);
     }
 
-    /* Lens pill — global category filter in the header */
+    /* Lens pill - global category filter in the header */
     .lens-pill {
       display: inline-flex;
-      align-items: center
+      align-items: center;
+      gap: 2px;
+      padding: 3px;
+      background: rgba(20, 52, 42, 0.06);
+      border: 1px solid rgba(20, 52, 42, 0.10);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .lens-segment {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(45, 61, 52, 0.65);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+      white-space: nowrap;
+    }
+    .lens-segment:hover {
+      color: #14342a;
+      background: rgba(255, 255, 255, 0.55);
+    }
+    .lens-segment.is-active {
+      color: #ffffff;
+      background: rgba(20, 52, 42, 0.92);
+      box-shadow: 0 1px 3px rgba(20, 52, 42, 0.18), 0 0 0 1px rgba(255,255,255,0.15) inset;
+    }
+    .lens-segment.is-active:hover {
+      background: rgba(30, 77, 58, 0.95);
+    }
+
+    /* On Pause page segment buttons */
+    .paused-segment {
+      color: rgba(45, 61, 52, 0.65);
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(20, 52, 42, 0.06);
+      transition: color 0.18s, background 0.18s, border 0.18s, box-shadow 0.18s;
+      cursor: pointer;
+    }
+    .paused-segment:hover {
+      color: #14342a;
+      background: rgba(255, 255, 255, 0.75);
+      border-color: rgba(20, 52, 42, 0.12);
+    }
+    .paused-segment.is-active {
+      color: #ffffff;
+      background: rgba(20, 52, 42, 0.92);
+      border-color: rgba(20, 52, 42, 0.92);
+      box-shadow: 0 2px 8px rgba(20, 52, 42, 0.12);
+    }
+  </style>
+</head>
+<body class="text-ink">
+  <div id="app"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
