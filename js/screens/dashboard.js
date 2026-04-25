@@ -216,7 +216,7 @@ export function renderDashboard(navigate, leads = [], session = null, lens = 'al
 
         <!-- Lens active indicator — quiet strip showing what world Nicole is in -->
         ${lensActive ? `
-        <div class="mb-8 flex items-center gap-3 px-5 py-3 rounded-2xl" style="background: rgba(255,255,255,0.78); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4);">
+        <div class="mb-8 flex items-center gap-3 px-5 py-3 rounded-2xl" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.6);">
           <span class="material-symbols-outlined text-forest text-base" style="font-variation-settings:'FILL' 1;">filter_alt</span>
           <p class="text-sm text-ink-mid flex-1">
             You're viewing <strong class="text-forest">${lensLabel}</strong> only. ${ls.length} lead${ls.length !== 1 ? 's' : ''} in this lens.
@@ -423,7 +423,7 @@ export function renderDashboard(navigate, leads = [], session = null, lens = 'al
             <h2 style="font-family:'Fraunces',Georgia,serif;" class="text-xl font-semibold text-white drop-shadow-sm">Season Tools</h2>
           </div>
 
-          <div class="card rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-5" style="background: linear-gradient(135deg, rgba(42,106,90,0.06), rgba(255,255,255,0.95));">
+          <div class="card rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-5" style="background: linear-gradient(135deg, rgba(218,232,226,0.97), rgba(255,255,255,0.97));">
             <div class="flex items-start gap-4">
               <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(42,106,90,0.12);">
                 <span class="material-symbols-outlined" style="color:#2a6a5a; font-variation-settings:'FILL' 1;">pause_circle</span>

@@ -50,7 +50,7 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
 
         ${isPaused ? `
         <!-- Paused banner — soft, premium, not alarming -->
-        <div class="mb-8 rounded-2xl p-5 flex items-center gap-4" style="background: linear-gradient(135deg, rgba(106,122,114,0.10), rgba(255,255,255,0.94)); backdrop-filter: blur(20px); border: 1px solid rgba(106,122,114,0.18);">
+        <div class="mb-8 rounded-2xl p-5 flex items-center gap-4" style="background: linear-gradient(135deg, rgba(228,232,230,0.97), rgba(255,255,255,0.97)); backdrop-filter: blur(20px); border: 1px solid rgba(106,122,114,0.18);">
           <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(106,122,114,0.18);">
             <span class="material-symbols-outlined text-forest" style="font-variation-settings:'FILL' 1;">spa</span>
           </div>

@@ -79,7 +79,7 @@ export function renderPaused(navigate, archivedLeads = [], lens = 'all') {
       data-contact="${(lead.contact_name || '').replace(/"/g,'&quot;').toLowerCase()}"
       data-category="${lead.category || ''}"
       data-reason="${(lead.archived_reason || '').replace(/"/g,'&quot;')}"
-      style="background: rgba(255,255,255,0.92); position: relative;">
+      style="background: rgba(255,255,255,0.97); position: relative;">
       <!-- Soft 'on pause' stripe in top-right corner -->
       <div style="position:absolute; top:0; right:0; width:0; height:0; border-style:solid; border-width:0 28px 28px 0; border-color:transparent rgba(106,122,114,0.25) transparent transparent; pointer-events:none;"></div>
 
@@ -137,12 +137,12 @@ export function renderPaused(navigate, archivedLeads = [], lens = 'all') {
             <p class="text-4xl font-bold text-forest" style="font-family:'Fraunces',Georgia,serif;">${all.length}</p>
             <p class="text-xs text-ink-soft mt-1">${all.length === 1 ? 'lead' : 'leads'} resting</p>
           </div>
-          <div class="card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(42,106,90,0.10), rgba(255,255,255,0.92));">
+          <div class="card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(218,232,226,0.97), rgba(255,255,255,0.97));">
             <p class="text-[10px] font-bold uppercase tracking-[0.12em] mb-2" style="color:#2a6a5a;">Investors</p>
             <p class="text-4xl font-bold" style="color:#2a6a5a; font-family:'Fraunces',Georgia,serif;">${investors.length}</p>
             <p class="text-xs text-ink-soft mt-1">paused in this category</p>
           </div>
-          <div class="card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(90,138,74,0.10), rgba(255,255,255,0.92));">
+          <div class="card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(228,238,222,0.97), rgba(255,255,255,0.97));">
             <p class="text-[10px] font-bold uppercase tracking-[0.12em] mb-2" style="color:#5a8a4a;">Philanthropy</p>
             <p class="text-4xl font-bold" style="color:#5a8a4a; font-family:'Fraunces',Georgia,serif;">${philanthropy.length}</p>
             <p class="text-xs text-ink-soft mt-1">paused in this category</p>
@@ -151,7 +151,7 @@ export function renderPaused(navigate, archivedLeads = [], lens = 'all') {
 
         <!-- Bulk restore prompt — only appears if a season pause is active -->
         ${investors.length >= 2 && investors.every(l => (l.archived_reason || '').toLowerCase().includes('season pause')) ? `
-        <section class="mb-8 card rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4" style="background: linear-gradient(135deg, rgba(42,106,90,0.08), rgba(255,255,255,0.94));">
+        <section class="mb-8 card rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4" style="background: linear-gradient(135deg, rgba(218,232,226,0.97), rgba(255,255,255,0.97));">
           <div class="flex items-start gap-4">
             <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(42,106,90,0.15);">
               <span class="material-symbols-outlined" style="color:#2a6a5a;">local_florist</span>
