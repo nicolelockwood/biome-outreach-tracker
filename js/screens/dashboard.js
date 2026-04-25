@@ -175,27 +175,6 @@ export function renderDashboard(navigate, leads = [], session = null, lens = 'al
 
       <main class="max-w-7xl mx-auto px-6 pt-10">
 
-        <!-- ── Overdue alert ── -->
-        ${(() => {
-          const today = new Date(); today.setHours(0,0,0,0);
-          const overdue = ls.filter(l => {
-            if (!l.next_follow_up || l.stage === 'Secured' || l.stage === 'Parked') return false;
-            try { const d = new Date(l.next_follow_up); d.setHours(0,0,0,0); return d < today; } catch { return false; }
-          });
-          if (overdue.length === 0) return '';
-          return `
-          <div class="mb-8 flex items-center gap-4 px-5 py-4 card rounded-2xl cursor-pointer" style="background: rgba(138,58,58,0.08); border: 1px solid rgba(138,58,58,0.15);" onclick="window.app.navigate('#calendar')">
-            <span class="material-symbols-outlined text-urgent text-xl shrink-0">warning</span>
-            <div class="flex-1">
-              <p class="text-sm font-bold text-urgent">
-                ${overdue.length} overdue follow-up${overdue.length > 1 ? 's' : ''} — ${overdue.map(l => l.org_name).slice(0,3).join(', ')}${overdue.length > 3 ? ` + ${overdue.length - 3} more` : ''}
-              </p>
-              <p class="text-xs text-urgent/70">Tap to view your follow-up task list →</p>
-            </div>
-            <span class="material-symbols-outlined text-urgent/50 text-base">chevron_right</span>
-          </div>`;
-        })()}
-
         <!-- ══════════════════════════════════════════════════
              ZONE 1 — WELCOME + PULSE
              ══════════════════════════════════════════════════ -->
