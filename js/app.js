@@ -8,10 +8,11 @@ import { renderEditLead } from './screens/editLead.js';
 import { renderCalendar, initCalendarControls } from './screens/calendar.js';
 import { renderStrategy } from './screens/strategy.js';
 import { renderArchive } from './screens/archive.js';
+import { renderPaused } from './screens/paused.js';
 import { renderInteractionModal } from './screens/interactionModal.js';
 import { renderOutcomeModal } from './screens/outcomeModal.js';
 import { renderImportLeads, renderExportData, renderNotifications, renderTeamManagement } from './screens/placeholders.js';
-import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, deleteLead, getAllInteractions, getAllInteractionsAll, updateInteraction } from './supabase.js';
+import { supabase, getLeads, getInteractions, createLead, createInteraction, updateLead, deleteLead, getAllInteractions, getAllInteractionsAll, updateInteraction, archiveLead, restoreLead, bulkArchiveByCategory, bulkRestoreByCategory, getArchivedLeads } from './supabase.js';
 
 class App {
   constructor() {
@@ -20,8 +21,97 @@ class App {
     this.showingModal = false;
     this.currentLeadId = null;
     this.leads = [];
+    this.archivedLeads = [];
     this.session = null;
+    // Lens — global category filter persisted in localStorage.
+    // Values: 'all' | 'Philanthropy' | 'Investors'
+    try {
+      this.lens = localStorage.getItem('biome-lens') || 'all';
+    } catch { this.lens = 'all'; }
     window.app = this;
+
+    // Lens setter — re-renders current screen with the new filter
+    window.setLens = (value) => {
+      this.lens = value || 'all';
+      try { localStorage.setItem('biome-lens', this.lens); } catch {}
+      this.render();
+    };
+
+    // Strategy track setter — Phil vs Investors track on the Strategy page.
+    // Persisted separately from the lens so Nicole can be in 'all' lens but
+    // still want to read just the Investor playbook.
+    window.setStrategyTrack = (value) => {
+      try { localStorage.setItem('biome-strategy-track', value); } catch {}
+      this.render();
+    };
+
+    // Pause a single lead — gentle confirm + optional reason
+    window.handleArchiveLead = async (leadId) => {
+      const lead = this.leads.find(l => l.id === leadId);
+      if (!lead) return;
+      const reason = prompt(
+        `Pause "${lead.org_name}"?\n\nThis lead will be hidden from the dashboard, kanban, leads table, and follow-ups. You can restore it anytime from the On Pause page.\n\nOptional reason (e.g. "Needs new project to engage"):`,
+        'Manual pause'
+      );
+      if (reason === null) return; // cancelled
+      const { error } = await archiveLead(leadId, reason || 'Manual pause');
+      if (error) {
+        alert('Failed to pause lead: ' + (error.message || 'Unknown error'));
+      } else {
+        await this.loadLeads();
+        this.render();
+      }
+    };
+
+    // Restore a paused lead — one click, no confirm
+    window.handleRestoreLead = async (leadId) => {
+      const { error } = await restoreLead(leadId);
+      if (error) {
+        alert('Failed to restore lead: ' + (error.message || 'Unknown error'));
+      } else {
+        await this.loadLeads();
+        this.render();
+      }
+    };
+
+    // Bulk pause every lead in a category — used for "Pause Investors for a season"
+    window.handleBulkArchive = async (category) => {
+      const matching = this.leads.filter(l =>
+        (l.category || '').split(',').map(s => s.trim()).includes(category)
+      );
+      if (matching.length === 0) {
+        alert(`No active ${category} leads to pause.`);
+        return;
+      }
+      const ok = confirm(
+        `Pause all ${matching.length} ${category} lead${matching.length !== 1 ? 's' : ''}?\n\n` +
+        `They'll be hidden from your dashboard, kanban, leads table, and follow-ups — but kept safely in the On Pause section. ` +
+        `You can restore the whole batch (or any individual lead) anytime.`
+      );
+      if (!ok) return;
+      const { count, error } = await bulkArchiveByCategory(category, `${category} season pause`);
+      if (error) {
+        alert('Bulk pause failed: ' + (error.message || 'Unknown error'));
+      } else {
+        await this.loadLeads();
+        this.render();
+        // Soft success — navigate to the On Pause page so Nicole sees where they went
+        if (count > 0) this.navigate('#paused');
+      }
+    };
+
+    // Bulk restore every paused lead in a category
+    window.handleBulkRestore = async (category) => {
+      const ok = confirm(`Restore all paused ${category} leads back to active status?`);
+      if (!ok) return;
+      const { count, error } = await bulkRestoreByCategory(category);
+      if (error) {
+        alert('Bulk restore failed: ' + (error.message || 'Unknown error'));
+      } else {
+        await this.loadLeads();
+        this.render();
+      }
+    };
     // Global save-lead handler — called from addLead form button
     window.handleSaveLead = async () => {
       const btn = document.getElementById('save-lead-btn');
@@ -321,7 +411,24 @@ class App {
   }
 
   async loadLeads() {
-    this.leads = await getLeads();
+    // Load active and paused leads in parallel
+    const [active, paused] = await Promise.all([
+      getLeads(),
+      getArchivedLeads(),
+    ]);
+    this.leads = active;
+    this.archivedLeads = paused;
+  }
+
+  // Apply the global category lens to a list of leads.
+  // 'all' returns everything; 'Philanthropy' or 'Investors' filters down.
+  // Lead category is comma-delimited, so a lead tagged "Investors,Philanthropy"
+  // appears in both filtered views.
+  lensFilter(leads = []) {
+    if (!this.lens || this.lens === 'all') return leads;
+    return leads.filter(l =>
+      (l.category || '').split(',').map(s => s.trim()).includes(this.lens)
+    );
   }
 
   async saveNewLead(leadData) {
@@ -446,119 +553,4 @@ class App {
     this.appElement.innerHTML = `
       <div class="min-h-screen flex items-center justify-center">
         <div class="card rounded-3xl px-12 py-10 flex flex-col items-center gap-6">
-          <svg width="52" height="40" viewBox="0 0 64 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="64" height="48" rx="6" fill="#14342a"/>
-            <text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="'Manrope',sans-serif" font-weight="800" font-size="11" fill="#3d8b63" letter-spacing="2">EARTHLY</text>
-          </svg>
-          <div class="w-6 h-6 border-2 border-forest/20 border-t-forest rounded-full animate-spin"></div>
-        </div>
-      </div>
-    `;
-  }
-
-  async render() {
-    const hash = window.location.hash.slice(1) || 'signin';
-    this.currentRoute = hash;
-
-    // Routes that don't require auth
-    const publicRoutes = ['signin', ''];
-    const isPublic = publicRoutes.includes(hash);
-
-    // If not authenticated and trying to access a protected route, redirect to signin
-    if (!this.session && !isPublic) {
-      this.appElement.innerHTML = renderSignIn(this.navigate.bind(this));
-      window.location.hash = '#signin';
-      return;
-    }
-
-    // If authenticated and hitting signin, redirect to dashboard
-    if (this.session && isPublic) {
-      if (this.leads.length === 0) {
-        this.showLoading();
-        await this.loadLeads();
-      }
-      window.location.hash = '#dashboard';
-      return;
-    }
-
-    // Public route â render signin
-    if (isPublic) {
-      this.appElement.innerHTML = renderSignIn(this.navigate.bind(this));
-      return;
-    }
-
-    // Load leads if we have a session but haven't loaded yet
-    if (this.session && this.leads.length === 0) {
-      this.showLoading();
-      await this.loadLeads();
-    }
-
-    let content = '';
-
-    if (hash === 'dashboard') {
-      content = renderDashboard(this.navigate.bind(this), this.leads, this.session);
-    } else if (hash === 'leads') {
-      content = renderLeads(this.navigate.bind(this), this.leads);
-    } else if (hash === 'kanban') {
-      content = renderKanban(this.navigate.bind(this), this.leads);
-    } else if (hash.startsWith('lead/')) {
-      const leadIdRaw = hash.split('/')[1];
-      const leadId = parseInt(leadIdRaw);
-      if (isNaN(leadId)) {
-        content = '<div class="text-center pt-20 text-on-surface-variant">Invalid lead ID.</div>';
-      } else {
-        const lead = this.leads.find(l => l.id === leadId) || null;
-        const interactions = lead ? await getInteractions(leadId) : [];
-        content = renderLeadDetail(lead, interactions, this.navigate.bind(this), (id) => this.showInteractionModal(id));
-      }
-    } else if (hash === 'add-lead') {
-      content = renderAddLead(this.navigate.bind(this));
-    } else if (hash.startsWith('edit-lead/')) {
-      const editIdRaw = hash.split('/')[1];
-      const editId = parseInt(editIdRaw);
-      const leadToEdit = isNaN(editId) ? null : (this.leads.find(l => l.id === editId) || null);
-      content = renderEditLead(leadToEdit, this.navigate.bind(this));
-    } else if (hash === 'calendar') {
-      const followUps = await getAllInteractions();
-      content = renderCalendar(this.navigate.bind(this), followUps, this.leads);
-    } else if (hash === 'strategy') {
-      content = renderStrategy(this.navigate.bind(this));
-    } else if (hash === 'archive') {
-      const securedLeads = this.leads.filter(l => l.stage === 'Secured');
-      const allInts = await getAllInteractionsAll();
-      content = renderArchive(this.navigate.bind(this), securedLeads, allInts);
-    } else if (hash === 'import') {
-      content = renderImportLeads();
-    } else if (hash === 'export') {
-      content = renderExportData();
-    } else if (hash === 'notifications') {
-      content = renderNotifications();
-    } else if (hash === 'team') {
-      content = renderTeamManagement();
-    } else {
-      content = '<div class="text-center pt-20 text-on-surface-variant">Route not found: ' + hash + '</div>';
-    }
-
-    this.appElement.innerHTML = content;
-
-    // Post-render hooks â calendar month navigation + date filtering
-    if (hash === 'calendar') {
-      setTimeout(() => initCalendarControls(), 0);
-    }
-
-    // Re-attach modals if needed
-    if (this.showingModal) {
-      this.renderModal();
-    }
-    if (this.showingOutcomeModal) {
-      this.renderOutcome();
-    }
-  }
-}
-
-// Initialize app when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => new App());
-} else {
-  new App();
-}
+          <svg wi

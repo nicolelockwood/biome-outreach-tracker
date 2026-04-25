@@ -25,13 +25,36 @@ export async function signOut() {
 }
 
 // ─── Leads helpers ───────────────────────────────────────────────
+// Active leads only — paused leads are filtered out client-side so this
+// works whether or not the `archived` column exists yet. Once the migration
+// runs, paused leads simply disappear from active views.
 export async function getLeads() {
   const { data, error } = await supabase
     .from('leads')
     .select('*')
     .order('id', { ascending: true });
   if (error) { console.error('getLeads error:', error); return []; }
+  return data.filter(l => !l.archived);
+}
+
+// All leads including paused — useful for archive views or admin
+export async function getAllLeadsIncludingArchived() {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('id', { ascending: true });
+  if (error) { console.error('getAllLeadsIncludingArchived error:', error); return []; }
   return data;
+}
+
+// Just the paused/archived leads
+export async function getArchivedLeads() {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('archived_at', { ascending: false });
+  if (error) { console.error('getArchivedLeads error:', error); return []; }
+  return data.filter(l => l.archived === true);
 }
 
 export async function getLead(id) {
@@ -63,59 +86,23 @@ export async function updateLead(id, updates) {
   return { data, error };
 }
 
-export async function deleteLead(id) {
-  const { error } = await supabase
+// ─── Pause / Restore (the "On Pause" hibernation system) ─────────
+// Pause a single lead. Reason is free-text — typically 'Investor season pause'
+// for bulk operations, or 'Manual pause' for individual ones.
+export async function archiveLead(id, reason = 'Manual pause') {
+  const { data, error } = await supabase
     .from('leads')
-    .delete()
-    .eq('id', id);
-  return { error };
-}
-
-// ─── Interactions helpers ────────────────────────────────────────
-export async function getInteractions(leadId) {
-  const { data, error } = await supabase
-    .from('interactions')
-    .select('*')
-    .eq('lead_id', leadId)
-    .order('date', { ascending: false });
-  if (error) { console.error('getInteractions error:', error); return []; }
-  return data;
-}
-
-export async function createInteraction(interaction) {
-  const { data, error } = await supabase
-    .from('interactions')
-    .insert([interaction])
-    .select()
-    .single();
-  return { data, error };
-}
-
-export async function getAllInteractions() {
-  const { data, error } = await supabase
-    .from('interactions')
-    .select('*')
-    .not('follow_up_date', 'is', null)
-    .order('follow_up_date', { ascending: true });
-  if (error) { console.error('getAllInteractions error:', error); return []; }
-  return data;
-}
-
-export async function getAllInteractionsAll() {
-  const { data, error } = await supabase
-    .from('interactions')
-    .select('*')
-    .order('date', { ascending: true });
-  if (error) { console.error('getAllInteractionsAll error:', error); return []; }
-  return data;
-}
-
-export async function updateInteraction(id, updates) {
-  const { data, error } = await supabase
-    .from('interactions')
-    .update(updates)
+    .update({
+      archived: true,
+      archived_at: new Date().toISOString(),
+      archived_reason: reason,
+    })
     .eq('id', id)
     .select()
     .single();
   return { data, error };
 }
+
+// Restore a paused lead — clears all archive metadata, lead reappears
+// in dashboard, kanban, leads, calendar, etc.
+export async function r

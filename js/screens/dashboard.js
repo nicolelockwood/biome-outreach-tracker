@@ -1,4 +1,6 @@
-// Shared nav HTML — single source of truth used by all screens
+// Shared nav HTML — single source of truth used by all screens.
+// Receives `active` (which nav link is highlighted) — the lens pill reads
+// state directly from window.app.lens so it stays in sync across screens.
 export function navHTML(active = 'dashboard') {
   const link = (id, label, hash) => {
     const isActive = active === id;
@@ -6,11 +8,21 @@ export function navHTML(active = 'dashboard') {
       ? 'text-forest font-bold border-b-2 border-canopy pb-0.5'
       : 'text-ink-soft hover:text-forest transition-colors'} text-sm cursor-pointer tracking-wide" onclick="window.app.navigate('#${hash}')">${label}</a>`;
   };
+
+  // Lens pill — current state read from window.app.lens
+  const lens = (typeof window !== 'undefined' && window.app && window.app.lens) || 'all';
+  const lensSeg = (value, label) => {
+    const isActive = lens === value;
+    return `<button type="button"
+      class="lens-segment ${isActive ? 'is-active' : ''}"
+      onclick="window.setLens('${value}')">${label}</button>`;
+  };
+
   return `
   <header class="glass-nav sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
       <!-- Logo -->
-      <div class="flex items-center gap-3 cursor-pointer" onclick="window.app.navigate('#dashboard')">
+      <div class="flex items-center gap-3 cursor-pointer shrink-0" onclick="window.app.navigate('#dashboard')">
         <div class="w-8 h-8 rounded-lg icon-forest flex items-center justify-center">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path d="M12 2C8 2 4 5.5 4 10c0 2.5 1.2 4.8 3 6.2V20h10v-3.8c1.8-1.4 3-3.7 3-6.2 0-4.5-4-8-8-8z" fill="#3d8b63" opacity="0.9"/>
@@ -21,19 +33,47 @@ export function navHTML(active = 'dashboard') {
       </div>
 
       <!-- Desktop nav -->
-      <nav class="hidden md:flex items-center gap-8">
+      <nav class="hidden lg:flex items-center gap-7">
         ${link('dashboard', 'Dashboard', 'dashboard')}
         ${link('kanban', 'Pipeline', 'kanban')}
         ${link('leads', 'Leads', 'leads')}
         ${link('calendar', 'Follow-ups', 'calendar')}
         ${link('strategy', 'Strategy', 'strategy')}
         ${link('archive', 'Secured', 'archive')}
+        ${link('paused', 'On Pause', 'paused')}
       </nav>
 
-      <!-- Right side -->
-      <div class="flex items-center gap-3">
+      <!-- Right side: lens pill + signout -->
+      <div class="flex items-center gap-4 shrink-0">
+        <!-- Lens pill — sits quietly, shows what world Nicole is currently inside -->
+        <div class="lens-pill hidden md:inline-flex" title="Filter the whole app to one category at a time">
+          ${lensSeg('all', 'All')}
+          ${lensSeg('Philanthropy', 'Phil')}
+          ${lensSeg('Investors', 'Inv')}
+        </div>
         <div class="w-9 h-9 rounded-full icon-forest flex items-center justify-center cursor-pointer" onclick="window.app.signOut()" title="Sign out">
           <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">logout</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tablet/medium screens: nav + mobile lens row -->
+    <div class="lg:hidden border-t border-white/30">
+      <div class="max-w-7xl mx-auto px-6 py-2.5 flex items-center justify-between gap-4 overflow-x-auto">
+        <nav class="hidden md:flex items-center gap-6 shrink-0">
+          ${link('dashboard', 'Dashboard', 'dashboard')}
+          ${link('kanban', 'Pipeline', 'kanban')}
+          ${link('leads', 'Leads', 'leads')}
+          ${link('calendar', 'Follow-ups', 'calendar')}
+          ${link('strategy', 'Strategy', 'strategy')}
+          ${link('archive', 'Secured', 'archive')}
+          ${link('paused', 'On Pause', 'paused')}
+        </nav>
+        <!-- Mobile: just the lens pill in this strip -->
+        <div class="lens-pill md:hidden">
+          ${lensSeg('all', 'All')}
+          ${lensSeg('Philanthropy', 'Phil')}
+          ${lensSeg('Investors', 'Inv')}
         </div>
       </div>
     </div>
@@ -76,14 +116,24 @@ function priorityGlassClass(priority) {
   return 'priority-glass-medium';
 }
 
-export function renderDashboard(navigate, leads = [], session = null) {
+export function renderDashboard(navigate, leads = [], session = null, lens = 'all', allActiveLeads = null) {
   const ls = leads;
+  const fullLs = allActiveLeads || leads; // unlensed source for cross-category counts
   const totalLeads = ls.length;
   // Category helpers — handle comma-separated (e.g. "Investors,Philanthropy")
   const hasPhil = (l) => (l.category || '').split(',').map(s=>s.trim()).includes('Philanthropy');
   const hasInv  = (l) => (l.category || '').split(',').map(s=>s.trim()).includes('Investors');
   const philanthropy = ls.filter(hasPhil);
   const investors = ls.filter(hasInv);
+  // Counts from the FULL active list — used for the bulk-pause CTA which
+  // should appear regardless of lens
+  const allActiveInvestors = fullLs.filter(hasInv);
+  const allActivePhilanthropy = fullLs.filter(hasPhil);
+  // Lens display
+  const lensActive = lens && lens !== 'all';
+  const lensLabel = lens === 'Philanthropy' ? 'Philanthropy'
+                   : lens === 'Investors' ? 'Investors'
+                   : 'All';
   const engaged = ls.filter(l => l.stage === 'Engaged');
   const contacted = ls.filter(l => l.stage === 'Contacted');
   const newLeads = ls.filter(l => l.stage === 'New');
@@ -194,6 +244,20 @@ export function renderDashboard(navigate, leads = [], session = null) {
           </div>
         </section>
 
+        <!-- Lens active indicator — quiet strip showing what world Nicole is in -->
+        ${lensActive ? `
+        <div class="mb-8 flex items-center gap-3 px-5 py-3 rounded-2xl" style="background: rgba(255,255,255,0.78); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4);">
+          <span class="material-symbols-outlined text-forest text-base" style="font-variation-settings:'FILL' 1;">filter_alt</span>
+          <p class="text-sm text-ink-mid flex-1">
+            You're viewing <strong class="text-forest">${lensLabel}</strong> only. ${ls.length} lead${ls.length !== 1 ? 's' : ''} in this lens.
+          </p>
+          <button class="text-xs font-bold uppercase tracking-wider text-ink-soft hover:text-forest transition-colors cursor-pointer flex items-center gap-1"
+            onclick="window.setLens('all')">
+            <span class="material-symbols-outlined text-sm">close</span>
+            Show All
+          </button>
+        </div>` : ''}
+
         <!-- ══════════════════════════════════════════════════
              FUNDING GOALS — first thing after welcome
              Goal attainment indicators up top — psychologically
@@ -207,11 +271,11 @@ export function renderDashboard(navigate, leads = [], session = null) {
             <h2 style="font-family:'Fraunces',Georgia,serif;" class="text-2xl font-semibold text-white drop-shadow-sm">Funding Goals</h2>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 ${lensActive ? '' : 'md:grid-cols-2'} gap-6">
             ${[
-              { label: 'Philanthropy Goal', goal: PHIL_GOAL, g: philGoal, icon: 'volunteer_activism', accentColor: '#5a8a4a', barColor: '#5a8a4a' },
-              { label: 'Investment Goal',   goal: INV_GOAL,  g: invGoal,  icon: 'payments',           accentColor: '#2a6a5a', barColor: '#2a6a5a' },
-            ].map(({ label, goal, g, icon, accentColor, barColor }) => `
+              { label: 'Philanthropy Goal', goal: PHIL_GOAL, g: philGoal, icon: 'volunteer_activism', accentColor: '#5a8a4a', barColor: '#5a8a4a', cat: 'Philanthropy' },
+              { label: 'Investment Goal',   goal: INV_GOAL,  g: invGoal,  icon: 'payments',           accentColor: '#2a6a5a', barColor: '#2a6a5a', cat: 'Investors' },
+            ].filter(({ cat }) => !lensActive || lens === cat).map(({ label, goal, g, icon, accentColor, barColor }) => `
             <div class="card rounded-2xl p-7">
               <div class="flex items-start justify-between mb-5">
                 <div>
@@ -250,9 +314,11 @@ export function renderDashboard(navigate, leads = [], session = null) {
           </div>
         </section>
 
-        <!-- Quick pulse — three glass cards with premium forest icons -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-          <!-- Philanthropy -->
+        <!-- Quick pulse — glass cards with premium forest icons.
+             Phil + Inv cards hide when their category is filtered out by the lens. -->
+        <section class="grid grid-cols-1 ${lensActive ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-5 mb-6">
+          <!-- Philanthropy — hidden when lens = Investors only -->
+          ${lens !== 'Investors' ? `
           <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
             <div class="flex items-start justify-between mb-4">
               <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-philanthropy">Philanthropy</p>
@@ -263,9 +329,10 @@ export function renderDashboard(navigate, leads = [], session = null) {
             <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${philanthropy.length}</p>
             <p class="text-sm text-ink-soft">Leads</p>
             <p class="text-xs text-ink-ghost mt-3">${philanthropy.filter(l => l.stage === 'Engaged' || l.stage === 'Contacted').length} actively engaged</p>
-          </div>
+          </div>` : ''}
 
-          <!-- Investors -->
+          <!-- Investors — hidden when lens = Philanthropy only -->
+          ${lens !== 'Philanthropy' ? `
           <div class="card rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#leads')">
             <div class="flex items-start justify-between mb-4">
               <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-investor">Investors</p>
@@ -276,12 +343,12 @@ export function renderDashboard(navigate, leads = [], session = null) {
             <p class="text-5xl font-bold text-forest mb-2" style="font-family:'Fraunces',Georgia,serif;">${investors.length}</p>
             <p class="text-sm text-ink-soft">Leads</p>
             <p class="text-xs text-ink-ghost mt-3">${investors.filter(l => l.ticket_size).length} with ticket sizes identified</p>
-          </div>
+          </div>` : ''}
 
-          <!-- Total Pipeline — dark glass -->
+          <!-- Total Pipeline — dark glass — always visible (label adapts) -->
           <div class="card-deep rounded-2xl p-8 group hover:cursor-pointer" onclick="window.app.navigate('#kanban')">
             <div class="flex items-start justify-between mb-4">
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">Total Pipeline</p>
+              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">${lensActive ? lensLabel + ' Pipeline' : 'Total Pipeline'}</p>
               <div class="w-9 h-9 rounded-xl icon-forest flex items-center justify-center">
                 <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1;">account_tree</span>
               </div>
@@ -346,64 +413,4 @@ export function renderDashboard(navigate, leads = [], session = null) {
                   <h4 class="font-semibold text-forest text-base leading-tight">${lead.org_name}</h4>
                   <span class="material-symbols-outlined text-sm ${(lead.priority === 'Critical' || lead.priority === 'High') ? 'text-error' : 'text-canopy'}" style="font-variation-settings:'FILL' 1;">priority_high</span>
                 </div>
-                <p class="text-sm text-ink-soft mb-3 line-clamp-2 leading-relaxed">${lead.action || lead.comments || 'No action noted'}</p>
-                <div class="flex items-center gap-2">
-                  <span class="px-2 py-0.5 ${stageColourClass(lead.stage)} text-[10px] font-bold uppercase tracking-wider rounded-full">${lead.stage}</span>
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" style="${lead.category === 'Philanthropy' ? 'background:rgba(90,138,74,0.12);color:#5a8a4a;' : 'background:rgba(42,106,90,0.12);color:#2a6a5a;'}">${lead.category}</span>
-                </div>
-              </div>
-              `).join('')}
-            </div>
-
-            <!-- Category split card -->
-            <div class="card-deep rounded-2xl p-6">
-              <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/50 mb-4">Category Split</p>
-              <div class="flex items-end gap-6 mb-4">
-                <div>
-                  <p class="text-3xl font-bold text-white" style="font-family:'Fraunces',Georgia,serif;">${philanthropy.length}</p>
-                  <p class="text-xs text-white/60 mt-1">Philanthropy</p>
-                </div>
-                <div class="w-px h-8 bg-white/10 mb-1"></div>
-                <div>
-                  <p class="text-3xl font-bold text-white" style="font-family:'Fraunces',Georgia,serif;">${investors.length}</p>
-                  <p class="text-xs text-white/60 mt-1">Investors</p>
-                </div>
-              </div>
-              <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden flex">
-                <div class="bg-canopy h-full bar-fill rounded-full" style="width:${philPct}%"></div>
-              </div>
-              <div class="flex justify-between mt-2">
-                <p class="text-[10px] text-white/40">${philPct}% philanthropy</p>
-                <p class="text-[10px] text-white/40">${invPct}% investors</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Bottom nav (mobile) ── -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
-        <a class="flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-forest text-white" onclick="window.app.navigate('#dashboard')">
-          <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">dashboard</span>
-          <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#kanban')">
-          <span class="material-symbols-outlined text-xl">view_kanban</span>
-          <span class="text-[9px] font-bold uppercase tracking-wider">Pipeline</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#leads')">
-          <span class="material-symbols-outlined text-xl">table_rows</span>
-          <span class="text-[9px] font-bold uppercase tracking-wider">Leads</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#calendar')">
-          <span class="material-symbols-outlined text-xl">calendar_today</span>
-          <span class="text-[9px] font-bold uppercase tracking-wider">Tasks</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 px-3 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#add-lead')">
-          <span class="material-symbols-outlined text-xl">add_circle</span>
-          <span class="text-[9px] font-bold uppercase tracking-wider">Add</span>
-        </a>
-      </nav>
-    </div>
-  `;
-}
+              

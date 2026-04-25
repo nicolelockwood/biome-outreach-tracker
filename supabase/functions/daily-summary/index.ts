@@ -36,17 +36,26 @@ Deno.serve(async (_req) => {
     const todayStr = today.toISOString().split('T')[0];
     const dateLabel = today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-    // ── Fetch all leads ───────────────────────────────────────────────
-    const { data: leads = [] } = await supabase.from('leads').select('*').order('id');
+    // ── Fetch all leads (excluding paused / archived) ─────────────────
+    // Client-side filter so this works regardless of whether the archived
+    // column exists in the database yet.
+    const { data: leadsRaw = [] } = await supabase.from('leads').select('*').order('id');
+    const leads = (leadsRaw || []).filter((l: any) => !l.archived);
+    const archivedLeadIds = new Set((leadsRaw || []).filter((l: any) => l.archived).map((l: any) => l.id));
 
     // ── Fetch follow-ups due today or overdue ─────────────────────────
-    const { data: followUps = [] } = await supabase
+    const { data: followUpsRaw = [] } = await supabase
       .from('interactions')
-      .select('*, leads(org_name, priority)')
+      .select('*, leads(org_name, priority, archived)')
       .not('follow_up_date', 'is', null)
       .eq('completed', false)
       .lte('follow_up_date', todayStr)
       .order('follow_up_date', { ascending: true });
+
+    // Drop any follow-ups whose lead is paused
+    const followUps = (followUpsRaw || []).filter((f: any) =>
+      !archivedLeadIds.has(f.lead_id) && !(f.leads && f.leads.archived)
+    );
 
     const overdue = followUps.filter((f: any) => f.follow_up_date < todayStr);
     const dueToday = followUps.filter((f: any) => f.follow_up_date === todayStr);
@@ -213,16 +222,4 @@ Deno.serve(async (_req) => {
       }),
     });
 
-    const result = await res.json();
-    if (!res.ok) {
-      return new Response(JSON.stringify({ error: 'Resend error', detail: result }), { status: 500 });
-    }
-
-    return new Response(JSON.stringify({ success: true, sent_to: recipientEmail, followUps: followUps.length }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-  } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
-  }
-});
+    const resu

@@ -35,11 +35,35 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
 
   const stageColour = stageColourClass;
 
+  // Paused state — banner + sidebar card adapt
+  const isPaused = lead.archived === true;
+  const pausedReason = lead.archived_reason || 'Manual pause';
+  const pausedAt = lead.archived_at
+    ? new Date(lead.archived_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
   return `
     <div class="min-h-screen pb-24 md:pb-0">
       ${navHTML('leads')}
 
       <main class="max-w-7xl mx-auto px-6 py-10">
+
+        ${isPaused ? `
+        <!-- Paused banner — soft, premium, not alarming -->
+        <div class="mb-8 rounded-2xl p-5 flex items-center gap-4" style="background: linear-gradient(135deg, rgba(106,122,114,0.10), rgba(255,255,255,0.94)); backdrop-filter: blur(20px); border: 1px solid rgba(106,122,114,0.18);">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(106,122,114,0.18);">
+            <span class="material-symbols-outlined text-forest" style="font-variation-settings:'FILL' 1;">spa</span>
+          </div>
+          <div class="flex-1">
+            <p class="font-semibold text-forest text-base mb-0.5" style="font-family:'Fraunces',Georgia,serif;">This lead is on pause</p>
+            <p class="text-sm text-ink-soft">${pausedReason}${pausedAt ? ` · since ${pausedAt}` : ''}. Hidden from active views — restore anytime.</p>
+          </div>
+          <button class="btn-primary px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+            onclick="window.handleRestoreLead(${lead.id})">
+            <span class="material-symbols-outlined text-sm">replay</span>
+            Restore
+          </button>
+        </div>` : ''}
 
         <!-- Breadcrumb -->
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -205,29 +229,4 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               </button>
             </div>
 
-          </div>
-        </div>
-      </main>
-
-      <!-- Bottom nav (mobile) -->
-      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
-        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
-          <span class="material-symbols-outlined text-xl">dashboard</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#kanban')">
-          <span class="material-symbols-outlined text-xl">view_kanban</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Pipeline</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl bg-forest text-white cursor-pointer" onclick="window.app.navigate('#leads')">
-          <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">table_rows</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Leads</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#add-lead')">
-          <span class="material-symbols-outlined text-xl">add_circle</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider">Add</span>
-        </a>
-      </nav>
-    </div>
-  `;
-}
+            <!-- Lifecycle: Pause 
