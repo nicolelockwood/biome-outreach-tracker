@@ -34,7 +34,7 @@ export async function getLeads() {
     .select('*')
     .order('id', { ascending: true });
   if (error) { console.error('getLeads error:', error); return []; }
-  return data.filter(l => !l.archived);
+  return (data || []).filter(l => !l.archived);
 }
 
 // All leads including paused — useful for archive views or admin
@@ -44,17 +44,25 @@ export async function getAllLeadsIncludingArchived() {
     .select('*')
     .order('id', { ascending: true });
   if (error) { console.error('getAllLeadsIncludingArchived error:', error); return []; }
-  return data;
+  return data || [];
 }
 
-// Just the paused/archived leads
+// Just the paused/archived leads.
+// Orders by id (always exists) rather than archived_at — that way this query
+// is safe to run before the migration adds archived_at. Until the column
+// exists, the filter returns [] which is the correct empty state.
 export async function getArchivedLeads() {
-  const { data, error } = await supabase
-    .from('leads')
-    .select('*')
-    .order('archived_at', { ascending: false });
-  if (error) { console.error('getArchivedLeads error:', error); return []; }
-  return data.filter(l => l.archived === true);
+  try {
+    const { data, error } = await supabase
+      .from('leads')
+      .select('*')
+      .order('id', { ascending: false });
+    if (error) { console.error('getArchivedLeads error:', error); return []; }
+    return (data || []).filter(l => l.archived === true);
+  } catch (e) {
+    console.error('getArchivedLeads exception:', e);
+    return [];
+  }
 }
 
 export async function getLead(id) {
@@ -105,4 +113,130 @@ export async function archiveLead(id, reason = 'Manual pause') {
 
 // Restore a paused lead — clears all archive metadata, lead reappears
 // in dashboard, kanban, leads, calendar, etc.
-export async function r
+export async function restoreLead(id) {
+  const { data, error } = await supabase
+    .from('leads')
+    .update({
+      archived: false,
+      archived_at: null,
+      archived_reason: null,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+  return { data, error };
+}
+
+// Bulk pause every lead matching a category. category is the plain string
+// stored in leads.category. Note this column is comma-delimited in some
+// rows (e.g. "Investors,Philanthropy"), so we fetch then verify in JS.
+export async function bulkArchiveByCategory(category, reason) {
+  const { data: matches, error: fetchErr } = await supabase
+    .from('leads')
+    .select('id, category, archived');
+  if (fetchErr) return { count: 0, error: fetchErr };
+
+  const cats = (c) => (c || '').split(',').map(s => s.trim());
+  const ids = (matches || [])
+    .filter(l => cats(l.category).includes(category))
+    .filter(l => !l.archived)
+    .map(l => l.id);
+
+  if (ids.length === 0) return { count: 0, error: null };
+
+  const { error } = await supabase
+    .from('leads')
+    .update({
+      archived: true,
+      archived_at: new Date().toISOString(),
+      archived_reason: reason || (category + ' season pause'),
+    })
+    .in('id', ids);
+
+  return { count: ids.length, error };
+}
+
+// Bulk restore every paused lead matching a category — used for ending
+// a season-pause and bringing the category back online.
+export async function bulkRestoreByCategory(category) {
+  const { data: matches, error: fetchErr } = await supabase
+    .from('leads')
+    .select('id, category, archived');
+  if (fetchErr) return { count: 0, error: fetchErr };
+
+  const cats = (c) => (c || '').split(',').map(s => s.trim());
+  const ids = (matches || [])
+    .filter(l => cats(l.category).includes(category))
+    .filter(l => l.archived === true)
+    .map(l => l.id);
+
+  if (ids.length === 0) return { count: 0, error: null };
+
+  const { error } = await supabase
+    .from('leads')
+    .update({
+      archived: false,
+      archived_at: null,
+      archived_reason: null,
+    })
+    .in('id', ids);
+
+  return { count: ids.length, error };
+}
+
+export async function deleteLead(id) {
+  const { error } = await supabase
+    .from('leads')
+    .delete()
+    .eq('id', id);
+  return { error };
+}
+
+// ─── Interactions helpers ────────────────────────────────────────
+export async function getInteractions(leadId) {
+  const { data, error } = await supabase
+    .from('interactions')
+    .select('*')
+    .eq('lead_id', leadId)
+    .order('date', { ascending: false });
+  if (error) { console.error('getInteractions error:', error); return []; }
+  return data;
+}
+
+export async function createInteraction(interaction) {
+  const { data, error } = await supabase
+    .from('interactions')
+    .insert([interaction])
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function getAllInteractions() {
+  const { data, error } = await supabase
+    .from('interactions')
+    .select('*')
+    .not('follow_up_date', 'is', null)
+    .order('follow_up_date', { ascending: true });
+  if (error) { console.error('getAllInteractions error:', error); return []; }
+  return data;
+}
+
+export async function getAllInteractionsAll() {
+  const { data, error } = await supabase
+    .from('interactions')
+    .select('*')
+    .order('date', { ascending: true });
+  if (error) { console.error('getAllInteractionsAll error:', error); return []; }
+  return data;
+}
+
+export async function updateInteraction(id, updates) {
+  const { data, error } = await supabase
+    .from('interactions')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  return { data, error };
+}

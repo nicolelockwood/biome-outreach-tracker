@@ -229,4 +229,46 @@ export function renderLeadDetail(lead, interactions = [], navigate, showInteract
               </button>
             </div>
 
-            <!-- Lifecycle: Pause 
+            <!-- Lifecycle: Pause / Restore — only shows the action that's relevant -->
+            ${!isPaused ? `
+            <div class="card rounded-2xl p-6">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-forest text-base">spa</span>
+                <h3 class="font-semibold text-forest text-base" style="font-family:'Fraunces',Georgia,serif;">Pause this Lead</h3>
+              </div>
+              <p class="text-xs text-ink-soft leading-relaxed mb-4">
+                Set this lead aside without losing it. They'll move to your On Pause section and disappear from active views — restore in one click whenever you're ready.
+              </p>
+              <button class="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer text-ink-mid border border-border-soft hover:border-forest hover:text-forest transition-all"
+                onclick="window.handleArchiveLead(${lead.id})">
+                <span class="material-symbols-outlined text-base">pause_circle</span>
+                Pause Lead
+              </button>
+            </div>` : ''}
+
+          </div>
+        </div>
+      </main>
+
+      <!-- Bottom nav (mobile) -->
+      <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 nav-glass-bottom rounded-t-3xl">
+        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#dashboard')">
+          <span class="material-symbols-outlined text-xl">dashboard</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#kanban')">
+          <span class="material-symbols-outlined text-xl">view_kanban</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider">Pipeline</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl bg-forest text-white cursor-pointer" onclick="window.app.navigate('#leads')">
+          <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">table_rows</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider">Leads</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 px-4 py-2 text-ink-soft hover:text-forest cursor-pointer" onclick="window.app.navigate('#add-lead')">
+          <span class="material-symbols-outlined text-xl">add_circle</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider">Add</span>
+        </a>
+      </nav>
+    </div>
+  `;
+}

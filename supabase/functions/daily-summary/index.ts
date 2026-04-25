@@ -222,4 +222,16 @@ Deno.serve(async (_req) => {
       }),
     });
 
-    const resu
+    const result = await res.json();
+    if (!res.ok) {
+      return new Response(JSON.stringify({ error: 'Resend error', detail: result }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({ success: true, sent_to: recipientEmail, followUps: followUps.length }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+  } catch (err) {
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+  }
+});
